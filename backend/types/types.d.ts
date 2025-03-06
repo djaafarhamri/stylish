@@ -5,3 +5,9 @@ declare module "express-serve-static-core" {
     userId: string;
   }
 }
+
+declare module "express" {
+  export interface Request {
+    userId: string;
+  }
+}

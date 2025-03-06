@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import productRoutes from './routes/product-routes';
@@ -10,6 +10,7 @@ import orderRoutes from './routes/order-routes';
 // Load environment variables
 dotenv.config();
 
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -17,10 +18,6 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-app.use('*', (req, res, next) => {
-  console.log(`API Call: ${req.method} ${req.originalUrl}`);
-  next()
-});
 // Routes
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
