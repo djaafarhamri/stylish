@@ -1,0 +1,131 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// User Model
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  role      UserRole @default(CUSTOMER)
+  orders    Order[]
+  cart      Cart?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Product Model
+model Product {
+  id          String          @id @default(uuid())
+  name        String
+  description String
+  price       Decimal
+  category    ProductCategory
+  sizes       Size[]
+  colors      Color[]
+  imageUrl    String
+  images      String[]
+  inStock     Boolean         @default(true)
+  inNew       Boolean         @default(true)
+  inSale      Boolean         @default(false)
+  quantity    Int
+  orderItems  OrderItem[]
+  cartItems   CartItem[]
+  rating      Float           @default(0)
+  reviewCount Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model Color {
+  id        String   @id @default(uuid())
+  name      String
+  value     String
+  hex       String
+  Product   Product? @relation(fields: [productId], references: [id])
+  productId String?
+}
+
+// Order Model
+model Order {
+  id        String      @id @default(uuid())
+  user      User        @relation(fields: [userId], references: [id])
+  userId    String
+  items     OrderItem[]
+  total     Decimal
+  status    OrderStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+// Order Model
+model Cart {
+  id        String      @id @default(uuid())
+  user      User        @relation(fields: [userId], references: [id])
+  userId    String      @unique
+  items     CartItem[]
+  total     Decimal
+  status    OrderStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+// OrderItem Model
+model CartItem {
+  id        String  @id @default(uuid())
+  order     Cart   @relation(fields: [cartId], references: [id])
+  cartId   String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  size      Size
+  color     String
+}
+
+// OrderItem Model
+model OrderItem {
+  id        String  @id @default(uuid())
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  size      Size
+  color     String
+}
+
+// Enums
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum ProductCategory {
+  Men
+  Women
+  Accessoires
+}
+
+enum Size {
+  XS
+  S
+  M
+  L
+  XL
+  XXL
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
