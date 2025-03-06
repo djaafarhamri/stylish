@@ -36,7 +36,7 @@ export const register = async (req: Request, res: Response) => {
     // Check if user exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      res.status(400).json({ message: "Email already in use" });
+      res.status(400).json({ status: false, message: "Email already in use" });
       return;
     }
 
@@ -48,9 +48,19 @@ export const register = async (req: Request, res: Response) => {
       data: { email, password: hashedPassword, firstName, lastName, phone },
     });
 
+    const token = generateToken(user.id);
+    
+    res.cookie("access_token", token, {
+      httpOnly: true, // Prevents JavaScript access
+      secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
+      sameSite: "none", // Prevent CSRF attacks
+      maxAge: 60 * 60 * 1000, // 1 hour expiration
+    });
+
     res.status(201).json({
+      status: true,
       message: "User registered successfully",
-      token: generateToken(user.id),
+      user
     });
   } catch (error) {
     res.status(400).json({ message: "Invalid input", error });
@@ -65,16 +75,25 @@ export const login = async (req: Request, res: Response) => {
     // Find user
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      res.status(400).json({ message: "Invalid credentials" });
+      res.status(400).json({ status: false, message: "Invalid credentials" });
       return;
     }
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      res.status(400).json({ message: "Invalid credentials" });
+      res.status(400).json({ status: false, message: "Invalid credentials" });
       return;
     }
-    res.json({ token: generateToken(user.id) });
+    const token = generateToken(user.id);
+
+    res.cookie("access_token", token, {
+      httpOnly: true, // Prevents JavaScript access
+      secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
+      sameSite: "none", // Prevent CSRF attacks
+      maxAge: 60 * 60 * 1000, // 1 hour expiration
+    });
+
+    res.json({ status: true, message: "Login successful", user }); // No need to return the token
   } catch (error) {
     res.status(400).json({ message: "Invalid input", error });
   }
@@ -94,12 +113,12 @@ export const getMe = async (req: Request, res: Response) => {
       },
     });
     if (!user) {
-      res.status(404).json({ message: "User not found" });
+      res.status(404).json({ status: false, message: "User not found" });
       return;
     }
-    res.json(user);
+    res.json({ status: true, message: "User fetched successfully", user});
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ status: false, message: "Server error" });
   }
 };
 
@@ -115,7 +134,7 @@ export const updateProfile = async (req: Request, res: Response) => {
 
     res.json(user);
   } catch (error) {
-    res.status(400).json({ message: "Could not update profile", error });
+    res.status(400).json({ status: false, message: "Could not update profile", error });
   }
 };
 
@@ -126,13 +145,13 @@ export const changePassword = async (req: Request, res: Response) => {
 
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!user) {
-      res.status(404).json({ message: "User not found" });
+      res.status(404).json({ status: false, message: "User not found" });
       return;
     }
     // Check old password
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
-      res.status(400).json({ message: "Incorrect old password" });
+      res.status(400).json({status: false, message: "Incorrect old password" });
       return;
     }
     // Update password
@@ -142,9 +161,9 @@ export const changePassword = async (req: Request, res: Response) => {
       data: { password: hashedPassword },
     });
 
-    res.json({ message: "Password updated successfully" });
+    res.json({ status: true, message: "Password updated successfully" });
   } catch (error) {
-    res.status(400).json({ message: "Could not change password", error });
+    res.status(400).json({ status: false, message: "Could not change password", error });
   }
 };
 
@@ -158,16 +177,16 @@ export const addAddress = async (req: Request, res: Response) => {
       data: { name, street, city, state, postalCode, userId },
     });
 
-    res.json(address);
+    res.json({ status: true, message: "address added", address});
   } catch (error) {
-    res.status(400).json({ message: "Could not add address", error });
+    res.status(400).json({ status: false, message: "Could not add address", error });
   }
 };
 
 // Update Profile
 export const updateAddress = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params
+    const { id } = req.params;
     const { name, street, city, state, postalCode } = req.body;
 
     const address = await prisma.address.update({
@@ -175,9 +194,9 @@ export const updateAddress = async (req: Request, res: Response) => {
       data: { name, street, city, state, postalCode },
     });
 
-    res.json(address);
+    res.json({ status: true, message: "address updated", address});
   } catch (error) {
-    res.status(400).json({ message: "Could not update address", error });
+    res.status(400).json({ status: false, message: "Could not update address", error });
   }
 };
 
@@ -186,13 +205,13 @@ export const deleteAddress = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const address = await prisma.address.delete({
+    await prisma.address.delete({
       where: { id },
     });
 
-    res.json(address);
+    res.json({ status: true, message: "address deleted"});
   } catch (error) {
-    res.status(400).json({ message: "Could not delete address", error });
+    res.status(400).json({ status: false, message: "Could not delete address", error });
   }
 };
 
@@ -203,7 +222,7 @@ export const getMyAddresses = async (req: Request, res: Response) => {
       where: { userId: req.userId },
     });
 
-    res.json(addresses);
+    res.json({ status: true, message: "addresses fetched successfully", addresses});
   } catch (error) {
     res.status(400).json({ message: "Could not delete address", error });
   }
@@ -213,11 +232,11 @@ export const getMyAddresses = async (req: Request, res: Response) => {
 export const getAddress = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const addresses = await prisma.address.findUnique({
+    const address = await prisma.address.findUnique({
       where: { id },
     });
 
-    res.json(addresses);
+    res.json({ status: true, message: "address fetched successfully", address});
   } catch (error) {
     res.status(400).json({ message: "Could not delete address", error });
   }

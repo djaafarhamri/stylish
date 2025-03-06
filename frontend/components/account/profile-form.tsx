@@ -31,7 +31,7 @@ export default function ProfileForm() {
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+
       setMessage({ type: "success", text: "Profile updated successfully!" })
     } catch (error) {
       setMessage({ type: "error", text: "Failed to update profile. Please try again." })
