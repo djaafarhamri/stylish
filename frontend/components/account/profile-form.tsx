@@ -6,17 +6,25 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { AuthService } from "@/services/auth-service"
+import { useAuth } from "@/context/AuthContext"
+import { useRouter } from "next/navigation"
 
 export default function ProfileForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
-
+  const {user, login} = useAuth()
   // In a real app, you would fetch this data from your backend
+  const router = useRouter()
+  if (!user) {
+    router.push("/login"); // Redirect to login page
+    return null; // Prevent rendering
+  }
   const [formData, setFormData] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    phone: user.phone,
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,7 +39,25 @@ export default function ProfileForm() {
 
     try {
       // Simulate API call
-
+      if (!formData.email) {
+        setMessage({ type: "error", text: "Email is empty" })
+        return;
+      }
+      if (!formData.firstName) {
+        setMessage({ type: "error", text: "First Name is empty" })
+        return;
+      }
+      if (!formData.lastName) {
+        setMessage({ type: "error", text: "Last Name is empty" })
+        return;
+      }
+      if (!formData.phone) {
+        setMessage({ type: "error", text: "Phone is empty" })
+        return;
+      }
+      
+      const data = await AuthService.updateProfile(formData)
+      
       setMessage({ type: "success", text: "Profile updated successfully!" })
     } catch (error) {
       setMessage({ type: "error", text: "Failed to update profile. Please try again." })

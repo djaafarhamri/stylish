@@ -1,5 +1,5 @@
 import apiClient from "@/lib/api-client"
-import type { Address, AddressesResponse, AddressResponse, LoginRequest, LoginResponse, SignupRequest, User } from "@/types/api"
+import type { Address, AddressesResponse, AddressResponse, LoginRequest, LoginResponse, ProfileRequest, SignupRequest, User } from "@/types/api"
 
 export const AuthService = {
   // Login user
@@ -16,7 +16,7 @@ export const AuthService = {
     return data
   },
   // update profile
-  async updateProfile(userData: SignupRequest): Promise<LoginResponse> {
+  async updateProfile(userData: ProfileRequest): Promise<LoginResponse> {
     const { data } = await apiClient.put("/users/update-profile", userData)
 
     return data
@@ -57,7 +57,7 @@ export const AuthService = {
   },
 
   // Get current user profile
-  async getCurrentUser(): Promise<User> {
+  async getCurrentUser(): Promise<LoginResponse> {
     const { data } = await apiClient.get("/users/me")
     return data
   },

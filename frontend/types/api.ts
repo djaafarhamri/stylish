@@ -48,6 +48,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  phone: string;
   role: "user" | "admin";
 }
 
@@ -58,7 +59,8 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   user: User;
-  token: string;
+  status: boolean;
+  message: string;
 }
 
 export interface AddressResponse {
@@ -76,6 +78,13 @@ export interface AddressesResponse {
 export interface SignupRequest {
   email: string;
   password: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+}
+
+export interface ProfileRequest {
+  email: string;
   firstName: string;
   lastName: string;
   phone: string;

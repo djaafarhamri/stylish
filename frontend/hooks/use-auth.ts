@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { AuthService } from "@/services/auth-service"
 import type { LoginRequest, SignupRequest } from "@/types/api"
 
-export function useAuth() {
+export function useAuth1() {
   const router = useRouter()
 
   // Fetch current user data if authenticated
@@ -64,7 +64,7 @@ export function useAuth() {
 // Hook for protected routes
 export function useRequireAuth(redirectUrl = "/login") {
   const router = useRouter()
-  const { user, isLoading } = useAuth()
+  const { user, isLoading } = useAuth1()
 
   useEffect(() => {
     if (!isLoading && !user) {
