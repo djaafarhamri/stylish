@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import productRoutes from './routes/product-routes';
 import categoryRoutes from './routes/category-routes';
 import userRoutes from './routes/user-routes';
+import cartRoutes from './routes/cart-routes';
 import orderRoutes from './routes/order-routes';
 
 // Load environment variables
@@ -24,6 +25,7 @@ app.use('*', (req, res, next) => {
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 
 // Global error handler 
