@@ -23,25 +23,32 @@ model User {
 
 // Product Model
 model Product {
-  id          String          @id @default(uuid())
+  id          String      @id @default(uuid())
   name        String
   description String
   price       Decimal
-  category    ProductCategory
+  category    Category    @relation(fields: [categoryid], references: [id])
+  categoryid  String
   sizes       Size[]
   colors      Color[]
   imageUrl    String
   images      String[]
-  inStock     Boolean         @default(true)
-  inNew       Boolean         @default(true)
-  inSale      Boolean         @default(false)
+  inStock     Boolean     @default(true)
+  inNew       Boolean     @default(true)
+  inSale      Boolean     @default(false)
   quantity    Int
   orderItems  OrderItem[]
   cartItems   CartItem[]
-  rating      Float           @default(0)
-  reviewCount Int             @default(0)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  rating      Float       @default(0)
+  reviewCount Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Category {
+  id      String    @id @default(uuid())
+  name    String    @unique
+  Product Product[]
 }
 
 model Color {
@@ -80,8 +87,8 @@ model Cart {
 // OrderItem Model
 model CartItem {
   id        String  @id @default(uuid())
-  order     Cart   @relation(fields: [cartId], references: [id])
-  cartId   String
+  order     Cart    @relation(fields: [cartId], references: [id])
+  cartId    String
   product   Product @relation(fields: [productId], references: [id])
   productId String
   quantity  Int
@@ -105,12 +112,6 @@ model OrderItem {
 enum UserRole {
   CUSTOMER
   ADMIN
-}
-
-enum ProductCategory {
-  Men
-  Women
-  Accessoires
 }
 
 enum Size {

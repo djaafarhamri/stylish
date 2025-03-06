@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import productRoutes from './routes/product-routes';
+import categoryRoutes from './routes/category-routes';
 import userRoutes from './routes/user-routes';
 import orderRoutes from './routes/order-routes';
 
@@ -21,6 +22,7 @@ app.use('*', (req, res, next) => {
 });
 // Routes
 app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 

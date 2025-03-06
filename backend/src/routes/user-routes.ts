@@ -1,6 +1,6 @@
 import express from "express";
 import { register, login, getMe, updateProfile, changePassword } from "../controllers/user-controllers";
-import { authMiddleware } from "../middlewares/auth-middleware";
+import { isAuthenticated } from "../middlewares/auth-middleware";
 
 const router = express.Router();
 
@@ -9,8 +9,8 @@ router.post("/register", register);
 router.post("/login", login);
 
 // Protected routes
-router.get("/me", authMiddleware, getMe);
-router.put("/update-profile", authMiddleware, updateProfile);
-router.put("/change-password", authMiddleware, changePassword);
+router.get("/me", isAuthenticated, getMe);
+router.put("/update-profile", isAuthenticated, updateProfile);
+router.put("/change-password", isAuthenticated, changePassword);
 
 export default router;
