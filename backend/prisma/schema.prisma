@@ -14,7 +14,7 @@ model User {
   password       String
   firstName      String
   lastName       String
-  phone          String
+  phone          String    
   addresses      Address[]
   role           UserRole  @default(CUSTOMER)
   orders         Order[]

@@ -1,4 +1,4 @@
-import express, { NextFunction } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import productRoutes from './routes/product-routes';
@@ -6,6 +6,7 @@ import categoryRoutes from './routes/category-routes';
 import userRoutes from './routes/user-routes';
 import cartRoutes from './routes/cart-routes';
 import orderRoutes from './routes/order-routes';
+import cookieParser from 'cookie-parser'
 
 // Load environment variables
 dotenv.config();
@@ -14,9 +15,22 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use("*", (req: Request, res: Response, next: NextFunction) => {
+  console.log("API CALL: ", req.originalUrl);
+  next();
+});
+
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    credentials: true,
+    origin: ["http://localhost:3000", "http://localhost:5173"],
+  })
+);
+
 app.use(express.json());
+app.use(cookieParser());
+
 
 // Routes
 app.use('/api/products', productRoutes);

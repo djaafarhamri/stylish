@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 
 
 export const isAuthenticated = async (req: Request, res: Response, next: NextFunction) => {
+    console.log(req.cookies)
     const token = req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {

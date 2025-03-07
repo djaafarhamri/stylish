@@ -49,7 +49,7 @@ export const register = async (req: Request, res: Response) => {
     });
 
     const token = generateToken(user.id);
-    
+
     res.cookie("access_token", token, {
       httpOnly: true, // Prevents JavaScript access
       secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
@@ -60,7 +60,7 @@ export const register = async (req: Request, res: Response) => {
     res.status(201).json({
       status: true,
       message: "User registered successfully",
-      user
+      user,
     });
   } catch (error) {
     res.status(400).json({ message: "Invalid input", error });
@@ -71,6 +71,7 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = loginSchema.parse(req.body);
+    console.log(email, password);
 
     // Find user
     const user = await prisma.user.findUnique({ where: { email } });
@@ -85,15 +86,15 @@ export const login = async (req: Request, res: Response) => {
       return;
     }
     const token = generateToken(user.id);
-
+    console.log(token);
+    console.log("Setting cookie...");
     res.cookie("access_token", token, {
-      httpOnly: true, // Prevents JavaScript access
-      secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
-      sameSite: "none", // Prevent CSRF attacks
-      maxAge: 60 * 60 * 1000, // 1 hour expiration
+      httpOnly: true,
+      maxAge: 60 * 60 * 1000, // 1 hour
     });
+    console.log("Cookie should be set now.");
 
-    res.json({ status: true, message: "Login successful", user }); // No need to return the token
+    res.json({ status: true, message: "Login successful", user });
   } catch (error) {
     res.status(400).json({ message: "Invalid input", error });
   }
@@ -101,6 +102,7 @@ export const login = async (req: Request, res: Response) => {
 
 // Get Current User
 export const getMe = async (req: Request, res: Response) => {
+  console.log("me");
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.userId },
@@ -116,7 +118,7 @@ export const getMe = async (req: Request, res: Response) => {
       res.status(404).json({ status: false, message: "User not found" });
       return;
     }
-    res.json({ status: true, message: "User fetched successfully", user});
+    res.json({ status: true, message: "User fetched successfully", user });
   } catch (error) {
     res.status(500).json({ status: false, message: "Server error" });
   }
@@ -134,7 +136,9 @@ export const updateProfile = async (req: Request, res: Response) => {
 
     res.json(user);
   } catch (error) {
-    res.status(400).json({ status: false, message: "Could not update profile", error });
+    res
+      .status(400)
+      .json({ status: false, message: "Could not update profile", error });
   }
 };
 
@@ -151,7 +155,9 @@ export const changePassword = async (req: Request, res: Response) => {
     // Check old password
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
-      res.status(400).json({status: false, message: "Incorrect old password" });
+      res
+        .status(400)
+        .json({ status: false, message: "Incorrect old password" });
       return;
     }
     // Update password
@@ -163,7 +169,9 @@ export const changePassword = async (req: Request, res: Response) => {
 
     res.json({ status: true, message: "Password updated successfully" });
   } catch (error) {
-    res.status(400).json({ status: false, message: "Could not change password", error });
+    res
+      .status(400)
+      .json({ status: false, message: "Could not change password", error });
   }
 };
 
@@ -177,9 +185,11 @@ export const addAddress = async (req: Request, res: Response) => {
       data: { name, street, city, state, postalCode, userId },
     });
 
-    res.json({ status: true, message: "address added", address});
+    res.json({ status: true, message: "address added", address });
   } catch (error) {
-    res.status(400).json({ status: false, message: "Could not add address", error });
+    res
+      .status(400)
+      .json({ status: false, message: "Could not add address", error });
   }
 };
 
@@ -194,9 +204,11 @@ export const updateAddress = async (req: Request, res: Response) => {
       data: { name, street, city, state, postalCode },
     });
 
-    res.json({ status: true, message: "address updated", address});
+    res.json({ status: true, message: "address updated", address });
   } catch (error) {
-    res.status(400).json({ status: false, message: "Could not update address", error });
+    res
+      .status(400)
+      .json({ status: false, message: "Could not update address", error });
   }
 };
 
@@ -209,9 +221,11 @@ export const deleteAddress = async (req: Request, res: Response) => {
       where: { id },
     });
 
-    res.json({ status: true, message: "address deleted"});
+    res.json({ status: true, message: "address deleted" });
   } catch (error) {
-    res.status(400).json({ status: false, message: "Could not delete address", error });
+    res
+      .status(400)
+      .json({ status: false, message: "Could not delete address", error });
   }
 };
 
@@ -222,7 +236,11 @@ export const getMyAddresses = async (req: Request, res: Response) => {
       where: { userId: req.userId },
     });
 
-    res.json({ status: true, message: "addresses fetched successfully", addresses});
+    res.json({
+      status: true,
+      message: "addresses fetched successfully",
+      addresses,
+    });
   } catch (error) {
     res.status(400).json({ message: "Could not delete address", error });
   }
@@ -236,7 +254,11 @@ export const getAddress = async (req: Request, res: Response) => {
       where: { id },
     });
 
-    res.json({ status: true, message: "address fetched successfully", address});
+    res.json({
+      status: true,
+      message: "address fetched successfully",
+      address,
+    });
   } catch (error) {
     res.status(400).json({ message: "Could not delete address", error });
   }
