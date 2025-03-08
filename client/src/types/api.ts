@@ -67,12 +67,13 @@ export interface AddressResponse {
   status: boolean;
   message: string;
   address: Address;
+  default?: string | null
 }
 
 export interface AddressesResponse {
   status: boolean;
   message: string;
-  address: Address[];
+  addresses: Address[];
 }
 
 export interface SignupRequest {
@@ -94,19 +95,21 @@ export interface PasswordRequest {
   currentPassword: string;
   newPassword: string;
 }
-export interface PasswordResponse {
+export interface NormalResponse {
   status: boolean;
   message: string;
 }
 
 export interface Address {
-  id?: string;
+  id: string;
   userId?: string;
   name: string;
   street: string;
   city: string;
   state: string;
   postalCode: string;
+  country: string;
+  isDefault: boolean;
 }
 
 // Order types

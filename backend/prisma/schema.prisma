@@ -39,28 +39,38 @@ model Address {
   updatedAt DateTime @updatedAt
 }
 
-// Product Model
 model Product {
-  id          String      @id @default(uuid())
+  id          String           @id @default(uuid())
   name        String
   description String
   price       Decimal
-  category    Category    @relation(fields: [categoryid], references: [id])
+  category    Category         @relation(fields: [categoryid], references: [id])
   categoryid  String
-  sizes       Size[]
-  colors      Color[]
   imageUrl    String
   images      String[]
-  inStock     Boolean     @default(true)
-  inNew       Boolean     @default(true)
-  inSale      Boolean     @default(false)
-  quantity    Int
-  orderItems  OrderItem[]
-  cartItems   CartItem[]
-  rating      Float       @default(0)
-  reviewCount Int         @default(0)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  inStock     Boolean          @default(true)
+  inNew       Boolean          @default(true)
+  inSale      Boolean          @default(false)
+  isFeatured  Boolean          @default(false)
+  rating      Float            @default(0)
+  reviewCount Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  variants    ProductVariant[]
+}
+
+model ProductVariant {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  color     Color   @relation(fields: [colorId], references: [id])
+  colorId   String
+  size      Size
+  quantity  Int     @default(0)
+
+  CartItem CartItem[]
+
+  OrderItem OrderItem[]
 }
 
 model Category {
@@ -70,12 +80,11 @@ model Category {
 }
 
 model Color {
-  id        String   @id @default(uuid())
-  name      String
-  value     String
-  hex       String
-  Product   Product? @relation(fields: [productId], references: [id])
-  productId String?
+  id   String @id @default(uuid())
+  name String
+  hex  String
+
+  ProductVariant ProductVariant[]
 }
 
 // Order Model
@@ -90,7 +99,17 @@ model Order {
   updatedAt DateTime    @updatedAt
 }
 
-// Order Model
+// OrderItem Model
+model OrderItem {
+  id        String         @id @default(uuid())
+  order     Order          @relation(fields: [orderId], references: [id])
+  orderId   String
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  variantId String
+  quantity  Int
+}
+
+// Cart Model
 model Cart {
   id        String      @id @default(uuid())
   user      User        @relation(fields: [userId], references: [id])
@@ -102,36 +121,17 @@ model Cart {
   updatedAt DateTime    @updatedAt
 }
 
-// OrderItem Model
+// CartItem Model
 model CartItem {
-  id        String  @id @default(uuid())
-  order     Cart    @relation(fields: [cartId], references: [id])
+  id        String         @id @default(uuid())
+  order     Cart           @relation(fields: [cartId], references: [id])
   cartId    String
-  product   Product @relation(fields: [productId], references: [id])
-  productId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  variantId String
   quantity  Int
-  size      Size
-  color     String
-}
-
-// OrderItem Model
-model OrderItem {
-  id        String  @id @default(uuid())
-  order     Order   @relation(fields: [orderId], references: [id])
-  orderId   String
-  product   Product @relation(fields: [productId], references: [id])
-  productId String
-  quantity  Int
-  size      Size
-  color     String
 }
 
 // Enums
-enum UserRole {
-  CUSTOMER
-  ADMIN
-}
-
 enum Size {
   XS
   S
@@ -139,6 +139,11 @@ enum Size {
   L
   XL
   XXL
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
 }
 
 enum OrderStatus {

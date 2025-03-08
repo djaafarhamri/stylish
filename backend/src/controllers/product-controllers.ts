@@ -13,7 +13,21 @@ export const getAllProducts = async (req: Request, res: Response) => {
     }
 };
 
-// ✅ 2. Get a single product by ID
+// ✅ 2. Get featured products
+export const getFeaturedProducts = async (req: Request, res: Response) => {
+    try {
+        const products = await prisma.product.findMany({
+            where: {
+                isFeatured: true
+            }
+        });
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching products" });
+    }
+};
+
+// ✅ 3. Get a single product by ID
 export const getProductById = async (req: Request, res: Response) => {
     const { id } = req.params;
     try {
@@ -30,9 +44,9 @@ export const getProductById = async (req: Request, res: Response) => {
     }
 };
 
-// ✅ 3. Create a new product (Admin only)
+// ✅ 4. Create a new product (Admin only)
 export const createProduct = async (req: Request, res: Response) => {
-    const { name, description, price, category, sizes, colors, imageUrl, images, inStock, inNew, inSale, quantity } = req.body;
+    const { name, description, price, categoryId, imageUrl, images, inStock, inNew, inSale, isFeatured, variants } = req.body;
 
     try {
         const newProduct = await prisma.product.create({
@@ -40,20 +54,34 @@ export const createProduct = async (req: Request, res: Response) => {
                 name,
                 description,
                 price,
-                category,
-                sizes,
-                colors,
+                categoryid: categoryId, // Ensure categoryId is correctly referenced
                 imageUrl,
                 images,
                 inStock,
                 inNew,
                 inSale,
-                quantity,
+                isFeatured,
+                variants: {
+                    create: variants.map((variant: { colorId: string; size: Size; quantity: number }) => ({
+                        colorId: variant.colorId,
+                        size: variant.size,
+                        quantity: variant.quantity,
+                    })),
+                },
+            },
+            include: {
+                category: true,
+                variants: {
+                    include: {
+                        color: true,
+                    },
+                },
             },
         });
 
         res.status(201).json(newProduct);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: "Error creating product" });
     }
 };

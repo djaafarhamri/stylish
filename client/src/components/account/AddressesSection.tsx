@@ -1,58 +1,61 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "../ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card"
 import { PlusCircle, Pencil, Trash2 } from "lucide-react"
 import AddressForm from "./AddressForm"
-
-type Address = {
-  id: string
-  name: string
-  street: string
-  city: string
-  state: string
-  postalCode: string
-  country: string
-  isDefault: boolean
-}
+import { AuthService } from "../../services/auth-service"
+import { Address } from "../../types/api"
 
 export default function AddressesSection() {
-  const [addresses, setAddresses] = useState<Address[]>([
-    {
-      id: "1",
-      name: "Home",
-      street: "123 Main St",
-      city: "New York",
-      state: "NY",
-      postalCode: "10001",
-      country: "United States",
-      isDefault: true,
-    },
-    {
-      id: "2",
-      name: "Work",
-      street: "456 Park Ave",
-      city: "New York",
-      state: "NY",
-      postalCode: "10022",
-      country: "United States",
-      isDefault: false,
-    },
-  ])
+  const [addresses, setAddresses] = useState<Address[]>([])
+
+  const getAddresses = async() => {
+    try {
+      const data = await AuthService.getMyAddresses()
+      setAddresses(data.addresses)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    getAddresses()
+  }, [])
 
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null)
-
-  const handleDelete = (id: string) => {
-    setAddresses(addresses.filter((address) => address.id !== id))
-  }
-
-  const handleSetDefault = (id: string) => {
-    setAddresses(
-      addresses.map((address) => ({
-        ...address,
-        isDefault: address.id === id,
-      })),
-    )
+  const handleDelete = async (id: string) => {
+    try {
+      const data = await AuthService.deleteAddress(id);
+      if (data.status) {
+        setAddresses((prevAddresses) => 
+          prevAddresses
+            .filter((address) => address.id !== id)
+            .map((address) => ({
+              ...address,
+              isDefault: data.default ? address.id === data.default : address.isDefault,
+            }))
+        );
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  
+  const handleSetDefault = async(id: string) => {
+    try {
+      const data = await AuthService.setDefaultAddress(id)
+      if (data.status) {
+        setAddresses(
+          addresses.map((address) => ({
+            ...address,
+            isDefault: address.id === id,
+          })),
+        )
+      }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   return (
@@ -100,7 +103,9 @@ export default function AddressesSection() {
             setShowAddForm(false)
             setEditingAddressId(null)
           }}
+          setAddresses={setAddresses}
           address={editingAddressId ? addresses.find((a) => a.id === editingAddressId) : undefined}
+          length={addresses.length}
         />
       )}
 

@@ -6,7 +6,7 @@ import type {
   LoginRequest,
   LoginResponse,
   PasswordRequest,
-  PasswordResponse,
+  NormalResponse,
   ProfileRequest,
   SignupRequest,
 } from "../types/api";
@@ -38,7 +38,7 @@ export const AuthService = {
   },
 
   // update profile
-  async changePassword(passwordData: PasswordRequest): Promise<PasswordResponse> {
+  async changePassword(passwordData: PasswordRequest): Promise<NormalResponse> {
     const { data } = await apiClient.put("/users/change-password", passwordData, {
       withCredentials: true,
     });
@@ -47,8 +47,8 @@ export const AuthService = {
   },
 
   // add address
-  async addAddress(addressData: Address): Promise<AddressResponse> {
-    const { data } = await apiClient.post("/users/adress", addressData, {
+  async addAddress(addressData: Omit<Address, "id" | "userId">): Promise<AddressResponse> {
+    const { data } = await apiClient.post("/users/address", addressData, {
       withCredentials: true,
     });
 
@@ -57,7 +57,7 @@ export const AuthService = {
 
   // add address
   async updateAddress(
-    addressData: Address,
+    addressData: Omit<Address, "id" | "userId">,
     id: string
   ): Promise<AddressResponse> {
     const { data } = await apiClient.put(`/users/address/${id}`, addressData, {
@@ -69,7 +69,7 @@ export const AuthService = {
 
   // add address
   async deleteAddress(id: string): Promise<AddressResponse> {
-    const { data } = await apiClient.delete(`/users/adress/${id}`, {
+    const { data } = await apiClient.delete(`/users/address/${id}`, {
       withCredentials: true,
     });
 
@@ -78,7 +78,16 @@ export const AuthService = {
 
   // get my address
   async getMyAddresses(): Promise<AddressesResponse> {
-    const { data } = await apiClient.get(`/users/adress/me`, {
+    const { data } = await apiClient.get(`/users/address/me`, {
+      withCredentials: true,
+    });
+
+    return data;
+  },
+
+  // set default address
+  async setDefaultAddress(id: string): Promise<AddressesResponse> {
+    const { data } = await apiClient.get(`/users/address/default/${id}`, {
       withCredentials: true,
     });
 
