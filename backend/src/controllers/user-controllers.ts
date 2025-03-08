@@ -100,13 +100,13 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const logout = async(req: Request, res: Response) => {
+export const logout = async (req: Request, res: Response) => {
   res.clearCookie("access_token", {
     httpOnly: true,
   });
 
-  res.status(200).json({ status: true,  message: "Logged out successfully" });
-}
+  res.status(200).json({ status: true, message: "Logged out successfully" });
+};
 
 // Get Current User
 export const getMe = async (req: Request, res: Response) => {
@@ -137,7 +137,7 @@ export const getMe = async (req: Request, res: Response) => {
 export const updateProfile = async (req: Request, res: Response) => {
   try {
     const { firstName, lastName, email, phone } = req.body;
-    console.log(req.body, req.userId)
+    console.log(req.body, req.userId);
     const user = await prisma.user.update({
       where: { id: req.userId },
       data: { firstName, lastName, email, phone },
@@ -188,11 +188,34 @@ export const changePassword = async (req: Request, res: Response) => {
 export const addAddress = async (req: Request, res: Response) => {
   try {
     const userId = req.userId;
-    const { name, street, city, state, postalCode } = req.body;
+    const { name, street, city, state, postalCode, country, isDefault } =
+      req.body;
 
     const address = await prisma.address.create({
-      data: { name, street, city, state, postalCode, userId },
+      data: {
+        name,
+        street,
+        city,
+        state,
+        postalCode,
+        country,
+        userId,
+        isDefault,
+      },
     });
+
+    if (isDefault) {
+      await prisma.$transaction([
+        prisma.address.updateMany({
+          where: { userId: req.userId },
+          data: { isDefault: false },
+        }),
+        prisma.address.update({
+          where: { id: address.id },
+          data: { isDefault: true },
+        }),
+      ]);
+    }
 
     res.json({ status: true, message: "address added", address });
   } catch (error) {
@@ -206,11 +229,23 @@ export const addAddress = async (req: Request, res: Response) => {
 export const updateAddress = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, street, city, state, postalCode } = req.body;
-
+    const { name, street, city, state, postalCode, country, isDefault } =
+      req.body;
+    if (isDefault) {
+      await prisma.$transaction([
+        prisma.address.updateMany({
+          where: { userId: req.userId },
+          data: { isDefault: false },
+        }),
+        prisma.address.update({
+          where: { id },
+          data: { isDefault: true },
+        }),
+      ]);
+    }
     const address = await prisma.address.update({
       where: { id },
-      data: { name, street, city, state, postalCode },
+      data: { name, street, city, state, postalCode, country },
     });
 
     res.json({ status: true, message: "address updated", address });
@@ -226,11 +261,43 @@ export const deleteAddress = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
+    const address = await prisma.address.findUnique({
+      where: { id },
+    });
+    if (!address) {
+      res.status(404).json({ status: false, message: "Address Not Found" });
+      return;
+    }
+    if (address?.userId !== req.userId) {
+      res
+        .status(401)
+        .json({
+          status: false,
+          message: "unauthorized to delete this address",
+        });
+      return;
+    }
     await prisma.address.delete({
       where: { id },
     });
 
-    res.json({ status: true, message: "address deleted" });
+    let nextAddress;
+    if (address.isDefault) {
+      nextAddress = await prisma.address.findFirst({
+        where: { userId: req.userId },
+        orderBy: { createdAt: "asc" }, // Get the oldest remaining address
+      });
+
+      // If there is another address, set it as the default
+      if (nextAddress) {
+        await prisma.address.update({
+          where: { id: nextAddress.id },
+          data: { isDefault: true },
+        });
+      }
+    }
+
+    res.json({ status: true, message: "address deleted", default: nextAddress? nextAddress.id:null });
   } catch (error) {
     res
       .status(400)
@@ -267,6 +334,28 @@ export const getAddress = async (req: Request, res: Response) => {
       status: true,
       message: "address fetched successfully",
       address,
+    });
+  } catch (error) {
+    res.status(400).json({ message: "Could not delete address", error });
+  }
+};
+
+export const setDefaultAddress = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    await prisma.$transaction([
+      prisma.address.updateMany({
+        where: { userId: req.userId },
+        data: { isDefault: false },
+      }),
+      prisma.address.update({
+        where: { id },
+        data: { isDefault: true },
+      }),
+    ]);
+    res.json({
+      status: true,
+      message: "address fetched successfully",
     });
   } catch (error) {
     res.status(400).json({ message: "Could not delete address", error });
