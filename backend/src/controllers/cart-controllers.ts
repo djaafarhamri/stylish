@@ -10,7 +10,7 @@ export const getCart = async (req: Request, res: Response) => {
     try {
         const cart = await prisma.cart.findUnique({
             where: { userId },
-            include: { items: { include: { product: true } } }
+            include: { items: { include: { variant: true } } }
         });
 
         if (!cart) {
@@ -27,7 +27,7 @@ export const getCart = async (req: Request, res: Response) => {
 // ✅ 2. Add Product to Cart
 export const addToCart = async (req: Request, res: Response) => {
     const userId = req.userId;
-    const { productId, quantity, size, color } = req.body;
+    const { variantId, quantity } = req.body;
 
     try {
         let cart = await prisma.cart.findUnique({ where: { userId } });
@@ -36,15 +36,15 @@ export const addToCart = async (req: Request, res: Response) => {
             cart = await prisma.cart.create({ data: { userId, total: 0, status: "PENDING" } });
         }
 
-        const product = await prisma.product.findUnique({ where: { id: productId } });
+        const variant = await prisma.productVariant.findUnique({ where: { id: variantId } });
 
-        if (!product) {
+        if (!variant) {
             res.status(404).json({ message: "Product not found" });
             return;
         }
 
         const existingCartItem = await prisma.cartItem.findFirst({
-            where: { cartId: cart.id, productId, size, color }
+            where: { cartId: cart.id, variantId }
         });
 
         if (existingCartItem) {
@@ -54,7 +54,7 @@ export const addToCart = async (req: Request, res: Response) => {
             });
         } else {
             await prisma.cartItem.create({
-                data: { cartId: cart.id, productId, quantity, size, color }
+                data: { cartId: cart.id, variantId, quantity }
             });
         }
 

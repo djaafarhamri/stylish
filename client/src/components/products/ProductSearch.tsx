@@ -12,7 +12,7 @@ export default function ProductsSearch({ initialQuery = "" }: ProductsSearchProp
   const [searchQuery, setSearchQuery] = useState(initialQuery)
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const searchParams = useSearchParams()
+  const [searchParams] = useSearchParams()
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault()

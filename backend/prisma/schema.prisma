@@ -44,13 +44,13 @@ model Product {
   name        String
   description String
   price       Decimal
+  salePrice   Decimal?
   category    Category         @relation(fields: [categoryid], references: [id])
   categoryid  String
   imageUrl    String
   images      String[]
   inStock     Boolean          @default(true)
   inNew       Boolean          @default(true)
-  inSale      Boolean          @default(false)
   isFeatured  Boolean          @default(false)
   rating      Float            @default(0)
   reviewCount Int              @default(0)
@@ -81,7 +81,7 @@ model Category {
 
 model Color {
   id   String @id @default(uuid())
-  name String
+  name String @unique
   hex  String
 
   ProductVariant ProductVariant[]

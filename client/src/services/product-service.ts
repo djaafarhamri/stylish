@@ -1,10 +1,20 @@
 import apiClient from "../lib/apiClient"
-import type { ProductFilters, ProductResponse, ProductsResponse } from "../types/api"
+import type { FiltersResponse, ProductFilters, ProductResponse, ProductsResponse } from "../types/api"
 
 export const ProductService = {
   // Get products with filtering, pagination, and sorting
   async getProducts(filters: ProductFilters = {}): Promise<ProductsResponse> {
     const { data } = await apiClient.get("/products", { params: filters })
+    return data
+  },
+
+  async getFeaturedProducts(): Promise<ProductsResponse> {
+    const { data } = await apiClient.get("/products/featured")
+    return data
+  },
+
+  async getFilters(): Promise<FiltersResponse> {
+    const { data } = await apiClient.get("/products/filters")
     return data
   },
 

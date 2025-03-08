@@ -1,7 +1,8 @@
 import type { Product } from "../../types/api"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Button } from "../ui/button"
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router"
+import { useLocation, useNavigate, useSearchParams } from "react-router"
+import ProductCard from "../ProductCard"
 
 interface ProductGridProps {
   products: Product[]
@@ -22,6 +23,7 @@ export default function ProductGrid({ products, total }: ProductGridProps) {
   const handleSortChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString())
     params.set("sortBy", value)
+    setSearchParams(params)
     navigate(`${pathname}?${params.toString()}`)
   }
 
@@ -59,29 +61,7 @@ export default function ProductGrid({ products, total }: ProductGridProps) {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
-              <div key={product?.id} className="group relative">
-                <div className="aspect-square w-full overflow-hidden rounded-md bg-gray-100 group-hover:opacity-75">
-                  <Link to={`/products/${product?.id}`}>
-                    <img
-                      src={product?.imageUrl || "/placeholder.svg?height=500&width=500"}
-                      alt={product?.name}
-                      width={500}
-                      height={500}
-                      className="h-full w-full object-cover object-center"
-                    />
-                  </Link>
-                </div>
-                <div className="mt-4 flex justify-between">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-900">
-                      <Link to={`/products/${product?.id}`}>{product?.name}</Link>
-                    </h3>
-                    <p className="mt-1 text-sm text-gray-500">{product?.category}</p>
-                  </div>
-                  <p className="text-sm font-medium text-gray-900">${product?.price.toFixed(2)}</p>
-                </div>
-              </div>
-            ))}
+              <ProductCard product={product} />))}
           </div>
 
           {totalPages > 1 && (

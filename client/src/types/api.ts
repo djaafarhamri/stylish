@@ -1,29 +1,52 @@
 // Product types
 export interface Product {
-  id: string | number;
+  id: string;
   name: string;
   description: string;
-  price: number;
-  category?: string;
+  price: string;
+  salePrice: string;
+  category?: category;
+  categoryId?: string;
   imageUrl?: string;
   images?: string[];
-  inventory?: number;
-  sizes: string[];
-  colors: { name: string; value: string; hex: string }[];
   createdAt?: string;
   updatedAt?: string;
   rating: number;
   reviewCount: number;
-  isNew: boolean;
-  isSale: boolean;
+  inNew: boolean;
+  isFeatured: boolean;
+  variants: variant[]
+}
+
+export interface category {
+  id?: string;
+  name?: string;
+}
+
+export interface variant {
+  id: string;
+  color: Color;
+  size: string;
+  quantity: number;
+}
+
+export interface Color {
+  name: string
+  hex: string
 }
 
 export interface ProductsResponse {
   products: Product[];
   status: string;
+  message: string;
   total: number;
-  page: number;
-  pages: number;
+}
+
+export interface FiltersResponse {
+  colors: Color[];
+  status: string;
+  message: string;
+  sizes: string[];
 }
 
 export interface ProductResponse {
@@ -36,6 +59,8 @@ export interface ProductFilters {
   minPrice?: number;
   maxPrice?: number;
   search?: string;
+  sizes?: string;
+  colors?: string;
   sortBy?: "price" | "createdAt" | "popular";
   sortOrder?: "asc" | "desc";
   page?: number;
