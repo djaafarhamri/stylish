@@ -119,6 +119,7 @@ export const getMe = async (req: Request, res: Response) => {
         email: true,
         firstName: true,
         lastName: true,
+        phone: true,
         role: true,
       },
     });
@@ -135,14 +136,14 @@ export const getMe = async (req: Request, res: Response) => {
 // Update Profile
 export const updateProfile = async (req: Request, res: Response) => {
   try {
-    const { firstName, lastName } = req.body;
-
+    const { firstName, lastName, email, phone } = req.body;
+    console.log(req.body, req.userId)
     const user = await prisma.user.update({
       where: { id: req.userId },
-      data: { firstName, lastName },
+      data: { firstName, lastName, email, phone },
     });
 
-    res.json(user);
+    res.json({ status: true, message: "profile updated successfully", user });
   } catch (error) {
     res
       .status(400)
