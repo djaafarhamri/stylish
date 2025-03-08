@@ -100,6 +100,14 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+export const logout = async(req: Request, res: Response) => {
+  res.clearCookie("access_token", {
+    httpOnly: true,
+  });
+
+  res.status(200).json({ status: true,  message: "Logged out successfully" });
+}
+
 // Get Current User
 export const getMe = async (req: Request, res: Response) => {
   console.log("me");

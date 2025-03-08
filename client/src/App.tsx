@@ -9,6 +9,7 @@ import CartPage from "./pages/Cart";
 import ProductsPage from "./pages/Products";
 import ProductContent from "./pages/Product";
 import { AppToaster } from "./components/ui/AppToaster";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -18,11 +19,13 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/account" element={<AccountPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/products/:id" element={<ProductContent />} />
         <Route path="/test" element={<Test />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/account" element={<AccountPage />} />
+        </Route>
       </Routes>
       <AppToaster />
     </>

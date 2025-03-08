@@ -77,7 +77,7 @@ export const AuthService = {
   // Logout user
   async logout(): Promise<void> {
     // Optionally call logout endpoint to invalidate token on server
-    await apiClient.post("/users/logout", {
+    await apiClient.get("/users/logout", {
       withCredentials: true,
     });
   },

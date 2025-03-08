@@ -8,9 +8,12 @@ import { Input } from "../ui/input"
 import { Label } from "../ui/label"
 import { AuthService } from "../../services/auth-service"
 import useAuth from "../../context/auth/useAuth"
+import { useNavigate } from "react-router"
+import { showToast } from "../ui/showToast"
 
 export default function ProfileForm() {
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingLogout, setIsLoadingLogout] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const {user} = useAuth()
   // In a real app, you would fetch this data from your backend
@@ -62,6 +65,23 @@ export default function ProfileForm() {
     }
   }
 
+  const navigate = useNavigate()
+
+  const handleLogout = async() => {
+    setIsLoadingLogout(true)
+    try {
+      await AuthService.logout()
+      setIsLoadingLogout(false)
+      navigate("/login")
+    } catch (e) {
+      console.log(e)
+      showToast({
+        title: "Unknown Error Occurred",
+        type: "error"
+      })
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {message && (
@@ -95,6 +115,10 @@ export default function ProfileForm() {
 
       <Button type="submit" disabled={isLoading}>
         {isLoading ? "Saving..." : "Save changes"}
+      </Button>
+
+      <Button disabled={isLoadingLogout} onClick={handleLogout} variant="outline">
+        {isLoading ? "Logging Out..." : "Log Out"}
       </Button>
     </form>
   )

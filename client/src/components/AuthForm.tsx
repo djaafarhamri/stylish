@@ -6,6 +6,7 @@ import { Button } from "./ui/button"
 import { useFormStatus } from "react-dom"
 import { User } from "../types/api"
 import useAuth from "../context/auth/useAuth"
+import { useNavigate } from "react-router"
 
 interface AuthFormProps {
   children: React.ReactNode
@@ -28,6 +29,8 @@ export function AuthForm({ children, submitLabel, action }: AuthFormProps) {
 
   const {login} = useAuth()
 
+  const navigate = useNavigate()
+  
   async function handleAction(formData: FormData) {
     setError(null)
     const result = await action(formData)
@@ -35,6 +38,7 @@ export function AuthForm({ children, submitLabel, action }: AuthFormProps) {
       setError(result.error)
     } else {
       login(result.user)
+      navigate("/account")
     }
   }
 

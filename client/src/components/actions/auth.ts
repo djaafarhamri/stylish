@@ -1,3 +1,4 @@
+import axios from "axios";
 import { AuthService } from "../../services/auth-service";
 
 export async function signup(formData: FormData) {
@@ -27,8 +28,12 @@ export async function signup(formData: FormData) {
       return { error: data.message };
     }
   } catch (e) {
-    console.log(e)
-    return { error: "Internal Server Error" };
+    if (axios.isAxiosError(e)) {
+      // Explicitly define response data type
+      const errorMessage = (e.response?.data as { message?: string })?.message;
+      return { error: errorMessage ?? "Internal Server Error" };
+    }
+    return { error: "An unexpected error occurred" };
   }
 }
 
@@ -43,9 +48,13 @@ export async function login(formData: FormData) {
     } else {
       return { error: data.message };
     }
-  } catch (e) {
-    console.log(e)
-    return { error: "Internal Server Error" };
+  } catch (e: unknown) {
+    if (axios.isAxiosError(e)) {
+      // Explicitly define response data type
+      const errorMessage = (e.response?.data as { message?: string })?.message;
+      return { error: errorMessage ?? "Internal Server Error" };
+    }
+    return { error: "An unexpected error occurred" };
   }
 }
 
