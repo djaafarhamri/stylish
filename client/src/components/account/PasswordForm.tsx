@@ -1,59 +1,85 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "../ui/button"
-import { Input } from "../ui/input"
-import { Label } from "../ui/label"
+import { useState } from "react";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { AuthService } from "../../services/auth-service";
+import axios from "axios";
 
 export default function PasswordForm() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
-  })
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (formData.newPassword !== formData.confirmPassword) {
-      setMessage({ type: "error", text: "New passwords do not match." })
-      return
+      setMessage({ type: "error", text: "New passwords do not match." });
+      return;
     }
 
-    setIsLoading(true)
-    setMessage(null)
+    setIsLoading(true);
+    setMessage(null);
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      setMessage({ type: "success", text: "Password updated successfully!" })
+      await AuthService.changePassword({
+        currentPassword: formData.currentPassword,
+        newPassword: formData.newPassword,
+      });
+      setMessage({ type: "success", text: "Password updated successfully!" });
       setFormData({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
-      })
+      });
     } catch (error) {
-        console.log(error)
-      setMessage({ type: "error", text: "Failed to update password. Please try again." })
+      console.log(axios.isAxiosError(error));
+      console.log(error);
+      if (axios.isAxiosError(error)) {
+        // Explicitly define response data type
+        const errorMessage = (error.response?.data as { message?: string })
+          ?.message;
+        setMessage({
+          type: "error",
+          text: errorMessage ?? "Failed to update password. Please try again.",
+        });
+      } else {
+        setMessage({
+          type: "error",
+          text: "An unexpected error occurred",
+        });
+      }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {message && (
         <div
-          className={`p-4 rounded-md ${message.type === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}
+          className={`p-4 rounded-md ${
+            message.type === "success"
+              ? "bg-green-50 text-green-700"
+              : "bg-red-50 text-red-700"
+          }`}
         >
           {message.text}
         </div>
@@ -99,6 +125,5 @@ export default function PasswordForm() {
         {isLoading ? "Updating..." : "Update password"}
       </Button>
     </form>
-  )
+  );
 }
-

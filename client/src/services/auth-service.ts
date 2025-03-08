@@ -5,6 +5,8 @@ import type {
   AddressResponse,
   LoginRequest,
   LoginResponse,
+  PasswordRequest,
+  PasswordResponse,
   ProfileRequest,
   SignupRequest,
 } from "../types/api";
@@ -29,6 +31,15 @@ export const AuthService = {
   // update profile
   async updateProfile(userData: ProfileRequest): Promise<LoginResponse> {
     const { data } = await apiClient.put("/users/update-profile", userData, {
+      withCredentials: true,
+    });
+
+    return data;
+  },
+
+  // update profile
+  async changePassword(passwordData: PasswordRequest): Promise<PasswordResponse> {
+    const { data } = await apiClient.put("/users/change-password", passwordData, {
       withCredentials: true,
     });
 

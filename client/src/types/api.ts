@@ -90,6 +90,15 @@ export interface ProfileRequest {
   phone: string;
 }
 
+export interface PasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+export interface PasswordResponse {
+  status: boolean;
+  message: string;
+}
+
 export interface Address {
   id?: string;
   userId?: string;
