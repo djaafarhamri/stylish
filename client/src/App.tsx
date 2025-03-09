@@ -10,6 +10,8 @@ import ProductsPage from "./pages/Products";
 import ProductContent from "./pages/Product";
 import { AppToaster } from "./components/ui/AppToaster";
 import ProtectedRoute from "./components/ProtectedRoute";
+import CheckoutPage from "./pages/Checkout";
+import ConfirmationPage from "./pages/CheckoutConfirmation";
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/checkout/confirmation" element={<ConfirmationPage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/products/:id" element={<ProductContent />} />
         <Route path="/test" element={<Test />} />
