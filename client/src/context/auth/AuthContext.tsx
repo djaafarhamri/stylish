@@ -4,7 +4,7 @@ import { createContext } from "react";
 
 
 interface AuthContextType {
-  user: User | undefined;
+  user: User | null;
   login: (userData: User) => void;
   logout: () => void;
 }

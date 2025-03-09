@@ -5,7 +5,7 @@ import { AuthContext } from "./AuthContext";
 
 // Provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<User | undefined>(undefined);
+    const [user, setUser] = useState<User | null>(null);
   
     useEffect(() => {
       const getMe = async() => {
@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   
     const logout = () => {
-      setUser(undefined);
+      setUser(null);
     };
   
     return (

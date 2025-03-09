@@ -28,6 +28,7 @@ export interface variant {
   color: Color;
   size: string;
   quantity: number;
+  product: Product;
 }
 
 export interface Color {
@@ -152,6 +153,29 @@ export interface Order {
 export interface OrderItem {
   productId: string;
   productName: string;
+  quantity: number;
+  price: number;
+}
+
+// Cart types
+export type CartResponse = {
+  status: boolean;
+  message?: string;
+  cart?: Cart;
+};
+
+export interface Cart {
+  id: string;
+  userId: string;
+  items: CartItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CartItem {
+  id: string;
+  variantId: string;
+  variant: variant;
   quantity: number;
   price: number;
 }

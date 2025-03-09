@@ -23,14 +23,17 @@ import { Link, useParams } from "react-router";
 import { showToast } from "../components/ui/showToast";
 import { ProductService } from "../services/product-service";
 import { Product } from "../types/api";
+import useCart from "../context/cart/useCart";
 
 export default function ProductContent() {
   const { id } = useParams();
-  const [product, setProduct] = useState<Product>();
+  const [product, setProduct] = useState<Product>({} as Product);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
+
+  const {add} = useCart()
 
   useEffect(() => {
     window.scrollTo(0, 0); // Scrolls to top when id changes
@@ -135,7 +138,7 @@ export default function ProductContent() {
     }
   };
 
-  const addToCart = () => {
+  const addToCart = async() => {
     if (!selectedSize || !selectedColor) {
       showToast({
         title: "Please select a size and color",
@@ -143,7 +146,18 @@ export default function ProductContent() {
       });
       return;
     }
-    console.log(getSelectedVariant()?.id);
+    const selectedVariant = getSelectedVariant()
+
+    if (!selectedVariant) {
+      showToast({
+        title: "Variant Not Found",
+        description: "The selected combination is not available.",
+        type: "error",
+      });
+      return;
+    }
+
+    await add({...selectedVariant, product}, quantity); // Assuming quantity = 1 by default
 
     showToast({
       title: "Added to cart",

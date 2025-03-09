@@ -59,7 +59,7 @@ export const createOrder = async (req: Request, res: Response) => {
     // Clear the cart
     await prisma.cart.update({
       where: { userId },
-      data: { items: { deleteMany: {} }, total: 0 },
+      data: { items: { deleteMany: {} } },
     });
 
     res.status(201).json(order);

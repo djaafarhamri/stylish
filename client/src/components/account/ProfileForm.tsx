@@ -18,7 +18,7 @@ export default function ProfileForm() {
     type: "success" | "error";
     text: string;
   } | null>(null);
-  const { user, login } = useAuth();
+  const { user, login, logout } = useAuth();
   // In a real app, you would fetch this data from your backend
 
   const [formData, setFormData] = useState({
@@ -79,6 +79,7 @@ export default function ProfileForm() {
     setIsLoadingLogout(true);
     try {
       await AuthService.logout();
+      logout()
       setIsLoadingLogout(false);
       navigate("/login");
     } catch (e) {

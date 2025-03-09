@@ -15,6 +15,7 @@ import {
   DialogFooter,
   DialogClose,
 } from "./ui/dialog";
+import useCart from "../context/cart/useCart";
 
 export default function ProductCard({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState<number>(1);
@@ -22,6 +23,8 @@ export default function ProductCard({ product }: { product: Product }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
+
+  const { add } = useCart();
 
   const toggleFavorite = (id: string) => {
     setFavorites((prev) =>
@@ -121,7 +124,7 @@ export default function ProductCard({ product }: { product: Product }) {
     }
   };
 
-  const confirmAddToCart = () => {
+  const confirmAddToCart = async () => {
     if (!selectedSize || !selectedColor) {
       showToast({
         title: "Selection Required",
@@ -130,6 +133,20 @@ export default function ProductCard({ product }: { product: Product }) {
       });
       return;
     }
+
+    // Find the matching variant based on selected size and color
+    const selectedVariant = getSelectedVariant()
+
+    if (!selectedVariant) {
+      showToast({
+        title: "Variant Not Found",
+        description: "The selected combination is not available.",
+        type: "error",
+      });
+      return;
+    }
+
+    await add({...selectedVariant, product}, quantity); // Assuming quantity = 1 by default
 
     showToast({
       title: "Added to cart",
