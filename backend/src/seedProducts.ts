@@ -1,9 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Size } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 async function seedProducts() {
-    const categoryNames = ["Electronics", "Clothing", "Home Appliances", "Books", "Toys"];
+    const categoryNames = ["Men", "Woman", "Accessories"];
     const colorData = [
         { name: "Red", hex: "#FF0000" },
         { name: "Blue", hex: "#0000FF" },
@@ -33,7 +33,15 @@ async function seedProducts() {
             });
         })
     );
-
+ 
+      function getRandomEnumValue(): Size {
+        const values = Object.keys(Size).filter(key => isNaN(Number(key))) as (keyof typeof Size)[];
+        return Size[values[Math.floor(Math.random() * values.length)]] as Size;
+      }
+      
+      const randomSize = getRandomEnumValue();
+      console.log(randomSize); // Example output: 2 (corresponding to Size.M)
+      
     const products = await Promise.all(
         Array.from({ length: 30 }, async (_, i) => {
             const category = categories[i % categories.length]; // Assign categories cyclically
@@ -44,6 +52,7 @@ async function seedProducts() {
                     name: `Product ${i + 1}`,
                     description: `Description for product ${i + 1}`,
                     price: parseFloat((Math.random() * 100).toFixed(2)),
+                    salePrice: Math.random() > 0.5?parseFloat((Math.random() * 50).toFixed(2)):0,
                     categoryid: category.id,
                     imageUrl: `https://picsum.photos/200/300?random=${i}`,
                     images: [
@@ -55,8 +64,10 @@ async function seedProducts() {
                     isFeatured: Math.random() > 0.8,
                     variants: {
                         create: selectedColors.map(color => ({
-                            colorId: color.id,
-                            size: "M", // Defaulting to 'M' for simplicity
+                            color: {
+                                connect: {id: color.id}
+                            },
+                            size: getRandomEnumValue() as unknown as keyof typeof Size,
                             quantity: Math.floor(Math.random() * 50) + 1
                         }))
                     }

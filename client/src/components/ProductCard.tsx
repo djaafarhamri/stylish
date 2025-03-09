@@ -6,7 +6,15 @@ import { Card, CardContent, CardFooter } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Link } from "react-router";
 import { Product } from "../types/api";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "./ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "./ui/dialog";
 
 export default function ProductCard({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState<number>(1);
@@ -24,7 +32,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const handleAddToCart = () => {
     setIsDialogOpen(true);
   };
-  
+
   // Get unique sizes and colors from variants
   const allSizes = Array.from(new Set(product?.variants?.map((v) => v.size)));
   const allColors = Array.from(
@@ -59,8 +67,13 @@ export default function ProductCard({ product }: { product: Product }) {
     : allColors;
 
   const handleSizeClick = (size: string) => {
+    if (selectedSize === size) {
+      setSelectedSize(null);
+      setQuantity(1);
+      return;
+    }
     setSelectedSize(size);
-    setQuantity(1)
+    setQuantity(1);
     if (
       selectedColor &&
       !product?.variants.some(
@@ -72,8 +85,13 @@ export default function ProductCard({ product }: { product: Product }) {
   };
 
   const handleColorClick = (color: string) => {
+    if (selectedColor === color) {
+      setSelectedColor(null);
+      setQuantity(1);
+      return;
+    }
     setSelectedColor(color);
-    setQuantity(1)
+    setQuantity(1);
     if (
       selectedSize &&
       !product?.variants.some(
@@ -145,8 +163,13 @@ export default function ProductCard({ product }: { product: Product }) {
           />
           <span className="sr-only">Add to favorites</span>
         </Button>
-        {product.inNew && <Badge className="absolute top-2 left-2">New</Badge>}
-        {product.salePrice && (
+        {product.inNew &&
+          (parseFloat(product.salePrice) ? (
+            <Badge className="absolute top-2 left-14">New</Badge>
+          ) : (
+            <Badge className="absolute top-2 left-2">New</Badge>
+          ))}
+        {parseFloat(product.salePrice) && (
           <Badge variant="destructive" className="absolute top-2 left-2">
             Sale
           </Badge>
@@ -157,15 +180,19 @@ export default function ProductCard({ product }: { product: Product }) {
           <h3 className="font-medium">{product.name}</h3>
         </Link>
         <div className="mt-2 flex items-center">
-          {product.salePrice ? (
+          {parseFloat(product.salePrice) ? (
             <>
-              <span className="text-lg font-bold">${product.salePrice}</span>
+              <span className="text-lg font-bold">
+                ${parseFloat(product.salePrice).toFixed(2)}
+              </span>
               <span className="ml-2 text-sm text-muted-foreground line-through">
-                ${product.price}
+                ${parseFloat(product.price).toFixed(2)}
               </span>
             </>
           ) : (
-            <span className="text-lg font-bold">${product.price}</span>
+            <span className="text-lg font-bold">
+              ${parseFloat(product.price).toFixed(2)}
+            </span>
           )}
         </div>
       </CardContent>
@@ -181,7 +208,9 @@ export default function ProductCard({ product }: { product: Product }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Select Size & Color</DialogTitle>
-            <DialogDescription>Choose options before adding to the cart.</DialogDescription>
+            <DialogDescription>
+              Choose options before adding to the cart.
+            </DialogDescription>
           </DialogHeader>
 
           {/* Size Selection */}

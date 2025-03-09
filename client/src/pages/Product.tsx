@@ -81,6 +81,11 @@ export default function ProductContent() {
     : allColors;
 
   const handleSizeClick = (size: string) => {
+    if (selectedSize === size) {
+      setSelectedSize(null);
+      setQuantity(1);
+      return;
+    }
     setSelectedSize(size);
     setQuantity(1)
     if (
@@ -94,6 +99,11 @@ export default function ProductContent() {
   };
 
   const handleColorClick = (color: string) => {
+    if (selectedColor === color) {
+      setSelectedColor(null);
+      setQuantity(1);
+      return;
+    }
     setSelectedColor(color);
     setQuantity(1)
     if (
