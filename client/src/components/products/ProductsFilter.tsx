@@ -89,7 +89,6 @@ export default function ProductsFilter({
 
     // Add selected sizes
     if (selectedSizes.length > 0) {
-      console.log(selectedSizes, selectedSizes.join(","));
       params.set("sizes", selectedSizes.join(",")); // Convert array to CSV format
     } else {
       params.delete("sizes");

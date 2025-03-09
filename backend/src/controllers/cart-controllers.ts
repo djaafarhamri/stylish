@@ -100,7 +100,6 @@ export const addToCart = async (req: Request, res: Response) => {
 // ✅ 4. Remove Item from Cart
 export const removeCartItem = async (req: Request, res: Response) => {
   const { variantId } = req.params;
-    console.log(variantId)
   try {
     const cartItem = await prisma.cartItem.findFirst({
       where: {

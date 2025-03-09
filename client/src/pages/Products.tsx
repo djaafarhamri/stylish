@@ -36,7 +36,6 @@ export default function ProductsPage() {
   useEffect(() => {
     const getProducts = async () => {
       const data = await ProductService.getProducts(filters);
-      console.log(data);
       setData(data);
     };
     getProducts();

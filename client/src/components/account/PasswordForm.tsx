@@ -50,7 +50,6 @@ export default function PasswordForm() {
         confirmPassword: "",
       });
     } catch (error) {
-      console.log(axios.isAxiosError(error));
       console.log(error);
       if (axios.isAxiosError(error)) {
         // Explicitly define response data type

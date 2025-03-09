@@ -1,21 +1,10 @@
-import type React from "react";
 
 import { ShoppingBag, CircleUserRound } from "lucide-react";
-import { useState } from "react";
-
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { Link } from "react-router";
 
 export default function Navbar() {
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, you would redirect to search results page
-    console.log("Searching for:", searchQuery);
-    // Example: router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
-  };
 
   return (
     <header className="sticky top-0 z-10 border-b bg-background">

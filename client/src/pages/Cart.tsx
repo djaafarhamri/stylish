@@ -11,7 +11,6 @@ import { variant } from "../types/api";
 
 export default function CartPage() {
   const { cart, add, remove } = useCart();
-  console.log("cart: ", cart);
 
   const [promoCode, setPromoCode] = useState("");
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);

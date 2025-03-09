@@ -11,7 +11,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
 
   useEffect(() => {
-    console.log("fetch cart : ", user);
     const fetchCart = async () => {
       try {
         if (user) {
@@ -43,8 +42,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const putItemToStorage = (item: variant, quantity: number) => {
     const guestCart = JSON.parse(localStorage.getItem("guestCart") || "[]");
-    console.log("vId : ", item.id);
-    console.log("gCart : ", guestCart);
     const existingItemIndex = guestCart.findIndex((i: any) => i.id === item.id);
 
     if (existingItemIndex !== -1) {
@@ -59,9 +56,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       });
     }
 
-    // Debugging: Check if product exists
-    console.log("Updated guest cart:", JSON.stringify(guestCart, null, 2));
-
     localStorage.setItem("guestCart", JSON.stringify(guestCart));
 
     // Update state
@@ -74,15 +68,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     };
 
     setCart(updatedCart);
-    console.log("Final Cart State:", updatedCart);
   };
 
   const add = async (item: variant, quantity: number = 1) => {
-    console.log(item);
     try {
       if (user) {
         // If logged in, use API
-        console.log("user cart shit :");
         const updatedCart = await CartService.addItemToCart(item.id, quantity);
         if (updatedCart.status) {
           setCart(updatedCart.cart);
@@ -113,7 +104,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const remove = async (variantId: string) => {
-    console.log("variantId: ", variantId);
     try {
       if (user) {
         // If logged in, use API

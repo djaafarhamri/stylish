@@ -58,9 +58,7 @@ export default function ProfileForm() {
       }
 
       const data = await AuthService.updateProfile(formData);
-      console.log(user)
       login(data.user)
-      console.log(user)
       setMessage({ type: "success", text: "Profile updated successfully!" });
     } catch (error) {
       console.log(error);

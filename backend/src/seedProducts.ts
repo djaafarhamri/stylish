@@ -39,9 +39,6 @@ async function seedProducts() {
         return Size[values[Math.floor(Math.random() * values.length)]] as Size;
       }
       
-      const randomSize = getRandomEnumValue();
-      console.log(randomSize); // Example output: 2 (corresponding to Size.M)
-      
     const products = await Promise.all(
         Array.from({ length: 30 }, async (_, i) => {
             const category = categories[i % categories.length]; // Assign categories cyclically

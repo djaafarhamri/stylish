@@ -71,7 +71,6 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = loginSchema.parse(req.body);
-    console.log(email, password);
 
     // Find user
     const user = await prisma.user.findUnique({ where: { email } });
@@ -86,13 +85,10 @@ export const login = async (req: Request, res: Response) => {
       return;
     }
     const token = generateToken(user.id);
-    console.log(token);
-    console.log("Setting cookie...");
     res.cookie("access_token", token, {
       httpOnly: true,
       maxAge: 60 * 60 * 1000, // 1 hour
     });
-    console.log("Cookie should be set now.");
 
     res.json({ status: true, message: "Login successful", user });
   } catch (error) {
@@ -110,7 +106,6 @@ export const logout = async (req: Request, res: Response) => {
 
 // Get Current User
 export const getMe = async (req: Request, res: Response) => {
-  console.log("me");
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.userId },
@@ -137,7 +132,6 @@ export const getMe = async (req: Request, res: Response) => {
 export const updateProfile = async (req: Request, res: Response) => {
   try {
     const { firstName, lastName, email, phone } = req.body;
-    console.log(req.body, req.userId);
     const user = await prisma.user.update({
       where: { id: req.userId },
       data: { firstName, lastName, email, phone },
