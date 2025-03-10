@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { CartItem, Order, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -8,23 +8,38 @@ const prisma = new PrismaClient();
  * @route POST /api/orders
  * @access Private (Customer)
  */
+
 export const createOrder = async (req: Request, res: Response) => {
   const userId = req.userId;
+  const {
+    total,
+    shippingAddress,
+    addressId,
+    paymentMethod,
+    cardNumber,
+    cardName,
+    expiryDate,
+    cvv,
+    notes,
+  } = req.body;
 
   try {
-    // Get the user's cart
+    if (!total || total <= 0) {
+      res.status(400).json({ message: "Invalid total amount" });
+      return;
+    }
+
+    // Create address if needed
+    const createdAddress = !addressId
+      ? await prisma.address.create({ data: shippingAddress })
+      : null;
+    const shippingAddressId = addressId || createdAddress?.id;
+
+    // **Registered User Order**
     const cart = await prisma.cart.findUnique({
       where: { userId },
       include: {
-        items: {
-          include: {
-            variant: {
-              include: {
-                product: true,
-              },
-            },
-          },
-        },
+        items: { include: { variant: { include: { product: true } } } },
       },
     });
 
@@ -33,19 +48,25 @@ export const createOrder = async (req: Request, res: Response) => {
       return;
     }
 
-    // Calculate total price
-    const total = cart.items.reduce(
-      (acc, item) =>
-        acc + item.variant.product.price.toNumber() * item.quantity,
-      0
-    );
+    if (!shippingAddressId) {
+      res.status(400).json({ message: "Shipping address is required" });
+      return;
+    }
 
     // Create order
     const order = await prisma.order.create({
       data: {
         userId,
         total,
+        isGuest: false,
         status: "PENDING",
+        shippingAddressId,
+        paymentMethod,
+        cardNumber: paymentMethod === "CREDIT" ? cardNumber : null,
+        cardName: paymentMethod === "CREDIT" ? cardName : null,
+        expiryDate: paymentMethod === "CREDIT" ? expiryDate : null,
+        cvv: paymentMethod === "CREDIT" ? cvv : null,
+        notes,
         items: {
           create: cart.items.map((item) => ({
             variantId: item.variantId,
@@ -56,15 +77,83 @@ export const createOrder = async (req: Request, res: Response) => {
       include: { items: true },
     });
 
-    // Clear the cart
+    // Clear cart after order creation
     await prisma.cart.update({
       where: { userId },
       data: { items: { deleteMany: {} } },
     });
 
-    res.status(201).json(order);
+    res
+      .status(201)
+      .json({ status: true, message: "Order created successfully", order });
+    return;
   } catch (error) {
+    console.error("Error creating order:", error);
     res.status(500).json({ message: "Could not create order", error });
+    return;
+  }
+};
+
+// **Helper function for guest orders**
+export const createGuestOrder = async (req: Request, res: Response) => {
+  const {
+    guestFirstName,
+    guestLastName,
+    guestEmail,
+    guestPhone,
+    items,
+    total,
+    shippingAddress,
+    paymentMethod,
+    cardNumber,
+    cardName,
+    expiryDate,
+    cvv,
+    notes,
+  } = req.body;
+
+  try {
+    // Create address if needed
+    const createdAddress = await prisma.address.create({
+      data: shippingAddress,
+    });
+
+    const order = await prisma.order.create({
+      data: {
+        guestFirstName,
+        guestLastName,
+        guestEmail,
+        guestPhone,
+        isGuest: true,
+        total,
+        status: "PENDING",
+        shippingAddressId: createdAddress.id,
+        items: {
+          createMany: {
+            data: items.map((item: CartItem) => ({
+              variantId: item.id,
+              quantity: item.quantity,
+            })),
+          },
+        },
+        paymentMethod,
+        cardNumber: paymentMethod === "CREDIT" ? cardNumber : null,
+        cardName: paymentMethod === "CREDIT" ? cardName : null,
+        expiryDate: paymentMethod === "CREDIT" ? expiryDate : null,
+        cvv: paymentMethod === "CREDIT" ? cvv : null,
+        notes,
+      },
+      include: { items: true },
+    });
+
+    res
+      .status(201)
+      .json({ status: true, message: "Order created successfully", order });
+    return;
+  } catch (error) {
+    console.error("Error creating guest order:", error);
+    res.status(500).json({ message: "Could not create guest order", error });
+    return;
   }
 };
 
@@ -79,11 +168,16 @@ export const getOrders = async (req: Request, res: Response) => {
   try {
     const orders = await prisma.order.findMany({
       where: { userId },
-      include: { items: { include: { variant: true } } },
+      include: {
+        items: { include: { variant: { include: { product: true } } } },
+      },
     });
 
-    res.status(200).json(orders);
+    res
+      .status(200)
+      .json({ status: true, message: "Order created successfully", orders });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Could not retrieve orders", error });
   }
 };
@@ -95,20 +189,32 @@ export const getOrders = async (req: Request, res: Response) => {
  */
 export const getOrderById = async (req: Request, res: Response) => {
   const { id } = req.params;
+  const { userId } = req
 
   try {
     const order = await prisma.order.findUnique({
-      where: { id },
-      include: { items: { include: { variant: true } } },
+      where: { id: parseInt(id) },
+      include: {
+        items: { include: { variant: { include: { product: true } } } },
+        shippingAddress: true,
+        user: true,
+      },
     });
 
     if (!order) {
       res.status(404).json({ message: "Order not found" });
       return;
     }
+    if (userId !== order.userId) {
+      res.status(403).json({ message: "not found authorised" });
+      return;
+    }
 
-    res.status(200).json(order);
+    res
+      .status(200)
+      .json({ status: true, message: "Order created successfully", order });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Could not retrieve order", error });
   }
 };
@@ -124,12 +230,13 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
 
   try {
     const order = await prisma.order.update({
-      where: { id },
+      where: { id: parseInt(id) },
       data: { status },
     });
 
     res.status(200).json(order);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Could not update order status", error });
   }
 };
@@ -143,9 +250,10 @@ export const deleteOrder = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    await prisma.order.delete({ where: { id } });
+    await prisma.order.delete({ where: { id: parseInt(id) } });
     res.status(200).json({ message: "Order deleted successfully" });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Could not delete order", error });
   }
 };

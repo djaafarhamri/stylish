@@ -15,7 +15,7 @@ export interface Product {
   reviewCount: number;
   inNew: boolean;
   isFeatured: boolean;
-  variants: variant[]
+  variants: variant[];
 }
 
 export interface category {
@@ -29,11 +29,12 @@ export interface variant {
   size: string;
   quantity: number;
   product: Product;
+  productId: string;
 }
 
 export interface Color {
-  name: string
-  hex: string
+  name: string;
+  hex: string;
 }
 
 export interface ProductsResponse {
@@ -93,7 +94,7 @@ export interface AddressResponse {
   status: boolean;
   message: string;
   address: Address;
-  default?: string | null
+  default?: string | null;
 }
 
 export interface AddressesResponse {
@@ -125,9 +126,19 @@ export interface NormalResponse {
   status: boolean;
   message: string;
 }
+export interface OrderResponse {
+  status: boolean;
+  message: string;
+  order: Order;
+}
+export interface OrdersResponse {
+  status: boolean;
+  message: string;
+  orders: Order[];
+}
 
 export interface Address {
-  id: string;
+  id?: string;
   userId?: string;
   name: string;
   street: string;
@@ -140,21 +151,35 @@ export interface Address {
 
 // Order types
 export interface Order {
-  id: string;
-  userId: string;
+  id?: string;
+  userId?: string;
+  user?: User;
+  guestFirstName?: string;
+  guestLastName?: string;
+  guestPhone?: string;
+  guestEmail?: string;
   items: OrderItem[];
-  total: number;
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
-  shippingAddress: Address;
-  createdAt: string;
-  updatedAt: string;
+  isGuest: boolean;
+  total: string;
+  paymentMethod: "CREDIT" | "PAYPAL" | "GOOGLEPAY" | "APPLEPAY" | "COD";
+  cardNumber?: string;
+  cardName?: string;
+  expiryDate?: string;
+  cvv?: string;
+  notes?: string;
+  status?: "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+  shippingAddress?: Address | undefined;
+  addressId?: String;
+  createdAt?: string;
+  updatedAt?: string;
+  quantity?: number;
 }
 
 export interface OrderItem {
-  productId: string;
-  productName: string;
+  id: string;
+  variantId: string;
+  variant: variant;
   quantity: number;
-  price: number;
 }
 
 // Cart types

@@ -4,8 +4,13 @@ import ProfileForm from "../components/account/ProfileForm"
 import PasswordForm from "../components/account/PasswordForm"
 import AddressesSection from "../components/account/AddressesSection"
 import OrderHistory from "../components/account/OrderHistory"
+import { useSearchParams } from "react-router"
 
 export default function AccountPage() {
+
+  const [searchParams] = useSearchParams()
+
+  const defaultTab = searchParams.get("tab") || "profile"
 
   return (
     <div className="container py-10">
@@ -14,7 +19,7 @@ export default function AccountPage() {
         <p className="text-muted-foreground">Manage your account settings and preferences</p>
       </div>
 
-      <Tabs defaultValue="profile" className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="password">Password</TabsTrigger>

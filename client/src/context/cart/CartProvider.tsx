@@ -72,6 +72,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setCart(updatedCart);
   };
 
+  const reset = () => {
+    localStorage.removeItem("guestCart");
+    setCart(undefined)
+  }
   const add = async (item: variant, quantity: number = 1) => {
     try {
       if (user) {
@@ -125,7 +129,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <CartContext.Provider value={{ cart, add, remove }}>
+    <CartContext.Provider value={{ cart, add, remove, reset }}>
       {children}
     </CartContext.Provider>
   );

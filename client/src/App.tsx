@@ -12,6 +12,7 @@ import { AppToaster } from "./components/ui/AppToaster";
 import ProtectedRoute from "./components/ProtectedRoute";
 import CheckoutPage from "./pages/Checkout";
 import ConfirmationPage from "./pages/CheckoutConfirmation";
+import OrderDetailsPage from "./pages/OrderPage";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/checkout/confirmation" element={<ConfirmationPage />} />
         <Route path="/products" element={<ProductsPage />} />
+        <Route path="/order/:id" element={<OrderDetailsPage />} />
         <Route path="/products/:id" element={<ProductContent />} />
         <Route path="/test" element={<Test />} />
         <Route element={<ProtectedRoute />}>

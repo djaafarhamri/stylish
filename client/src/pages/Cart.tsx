@@ -56,7 +56,8 @@ export default function CartPage() {
     (sum, item) =>
       sum +
       (parseFloat(item.variant?.product?.salePrice)
-        ? parseFloat(item.variant?.product?.salePrice)
+        ? parseFloat(item.variant?.product?.salePrice)*
+        item.quantity
         : parseFloat(item.variant?.product?.price)) *
         item.quantity,
     0
@@ -93,7 +94,7 @@ export default function CartPage() {
             <div className="rounded-lg border">
               <div className="p-6">
                 <h2 className="mb-4 text-lg font-semibold">
-                  Cart Items ({cart?.items.length})
+                  Cart Items ({cart?.items.length || 0})
                 </h2>
                 <div className="space-y-6">
                   {cart?.items.map((item) => (

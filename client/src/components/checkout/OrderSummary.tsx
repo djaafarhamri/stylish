@@ -26,7 +26,8 @@ export default function OrderSummary() {
     (sum, item) =>
       sum +
       (parseFloat(item.variant?.product?.salePrice)
-        ? parseFloat(item.variant?.product?.salePrice)
+        ? parseFloat(item.variant?.product?.salePrice)*
+        item.quantity
         : parseFloat(item.variant?.product?.price)) *
         item.quantity,
     0

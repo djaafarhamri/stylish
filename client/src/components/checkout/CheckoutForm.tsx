@@ -23,7 +23,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import SavedAddresses, { type AddressOption } from "./SavedAddresses";
 import useAuth from "../../context/auth/useAuth";
 import { useNavigate } from "react-router";
-import { Address } from "../../types/api";
+import { Address, Order, variant } from "../../types/api";
+import { OrderService } from "../../services/order-service";
+import useCart from "../../context/cart/useCart";
+import { showToast } from "../ui/showToast";
 
 // Create two different schemas based on authentication status
 const guestFormSchema = z
@@ -33,11 +36,12 @@ const guestFormSchema = z
     email: z.string().email({ message: "Invalid email address" }),
     phone: z.string().min(10, { message: "Valid phone number is required" }),
     address: z.string().min(5, { message: "Address is required" }),
+    addressName: z.string().optional(),
     city: z.string().min(2, { message: "City is required" }),
     state: z.string().min(2, { message: "State is required" }),
     zipCode: z.string().min(5, { message: "Valid zip code is required" }),
     country: z.string().min(2, { message: "Country is required" }),
-    paymentMethod: z.enum(["credit", "paypal"]),
+    paymentMethod: z.enum(["CREDIT", "PAYPAL"]),
     cardNumber: z.string().optional(),
     cardName: z.string().optional(),
     expiryDate: z.string().optional(),
@@ -45,7 +49,7 @@ const guestFormSchema = z
     notes: z.string().optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.paymentMethod === "credit") {
+    if (data.paymentMethod === "CREDIT") {
       if (!data.cardNumber?.trim()) {
         ctx.addIssue({
           code: "custom",
@@ -79,6 +83,14 @@ const guestFormSchema = z
 
 const userFormSchema = z
   .object({
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    email: z.string().optional(),
+    phone: z.string().optional(),
+    addressName: z
+      .string()
+      .min(1, { message: "Address Name is required" })
+      .optional(),
     address: z.string().min(5, { message: "Address is required" }).optional(),
     city: z.string().min(2, { message: "City is required" }).optional(),
     state: z.string().min(2, { message: "State is required" }).optional(),
@@ -87,7 +99,7 @@ const userFormSchema = z
       .min(5, { message: "Valid zip code is required" })
       .optional(),
     country: z.string().min(2, { message: "Country is required" }).optional(),
-    paymentMethod: z.enum(["credit", "paypal"]),
+    paymentMethod: z.enum(["CREDIT", "PAYPAL"]),
     cardNumber: z.string().optional(),
     cardName: z.string().optional(),
     expiryDate: z.string().optional(),
@@ -95,7 +107,7 @@ const userFormSchema = z
     notes: z.string().optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.paymentMethod === "credit") {
+    if (data.paymentMethod === "CREDIT") {
       if (!data.cardNumber?.trim()) {
         ctx.addIssue({
           code: "custom",
@@ -135,7 +147,9 @@ export default function CheckoutForm({ addresses }: { addresses: Address[] }) {
   const [addressOption, setAddressOption] = useState<AddressOption>(
     user && addresses?.length ? "saved" : "new"
   );
-  const [selectedAddressId, setSelectedAddressId] = useState(addresses?.length ? addresses[0]?.id:"");
+  const [selectedAddressId, setSelectedAddressId] = useState(
+    addresses?.length ? (addresses[0]?.id ? addresses[0]?.id : "") : ""
+  );
   const formSchema = user ? userFormSchema : guestFormSchema;
 
   // Choose the appropriate schema based on authentication status
@@ -151,11 +165,12 @@ export default function CheckoutForm({ addresses }: { addresses: Address[] }) {
             phone: "",
           }),
       address: "",
+      addressName: "",
       city: "",
       state: "",
       zipCode: "",
       country: "",
-      paymentMethod: "credit",
+      paymentMethod: "CREDIT",
       cardNumber: "",
       cardName: "",
       expiryDate: "",
@@ -165,19 +180,23 @@ export default function CheckoutForm({ addresses }: { addresses: Address[] }) {
   });
 
   useEffect(() => {
-    setSelectedAddressId(addresses?.length ? addresses[0]?.id:"")
+    setSelectedAddressId(
+      addresses?.length ? (addresses[0]?.id ? addresses[0]?.id : "") : ""
+    );
   }, [addresses]);
 
   useEffect(() => {
-    console.log("option : ", addressOption);
     if (user && addressOption === "saved") {
-        form.setValue("address", addresses?.length ? addresses[0].street: "");
-        form.setValue("city", addresses?.length ? addresses[0].city: "");
-        form.setValue("state", addresses?.length ? addresses[0].state: "");
-        form.setValue("zipCode", addresses?.length ? addresses[0].postalCode: "");
-        form.setValue("country", addresses?.length ? addresses[0].country: "");
+      form.setValue("address", addresses?.length ? addresses[0].street : "");
+      form.setValue("city", addresses?.length ? addresses[0].city : "");
+      form.setValue("state", addresses?.length ? addresses[0].state : "");
+      form.setValue(
+        "zipCode",
+        addresses?.length ? addresses[0].postalCode : ""
+      );
+      form.setValue("country", addresses?.length ? addresses[0].country : "");
+      form.setValue("addressName", addresses?.length ? addresses[0].name : "");
     }
-    console.log("form : ", form.getValues());
   }, [addressOption, user, form, addresses]);
 
   // If user logs in/out, reset the form
@@ -186,8 +205,9 @@ export default function CheckoutForm({ addresses }: { addresses: Address[] }) {
     setAddressOption(user ? "saved" : "new");
   }, [user, form]);
 
+  const { cart, reset } = useCart();
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("submit");
     setIsSubmitting(true);
 
     // If user is logged in, add user information to the values
@@ -201,17 +221,75 @@ export default function CheckoutForm({ addresses }: { addresses: Address[] }) {
       };
     }
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const subtotal = cart?.items.reduce(
+      (sum, item) =>
+        sum +
+        (parseFloat(item.variant?.product?.salePrice)
+          ? parseFloat(item.variant?.product?.salePrice) * item.quantity
+          : parseFloat(item.variant?.product?.price)) *
+          item.quantity,
+      0
+    );
 
-    console.log(values);
+    const isGuest = !user;
+    const orderData: Order = {
+      userId: isGuest ? undefined : user.id,
+      guestFirstName: isGuest ? values.firstName : undefined,
+      guestLastName: isGuest ? values.lastName : undefined,
+      guestPhone: isGuest ? values.phone : undefined,
+      guestEmail: isGuest ? values.email : undefined,
+      addressId: addressOption === "new" ? undefined : selectedAddressId,
+      shippingAddress:
+        addressOption === "new"
+          ? {
+              city: values.city || "",
+              street: values.address || "",
+              postalCode: values.zipCode || "",
+              state: values.state || "",
+              country: values.country || "",
+              name: isGuest ? "Guest" : values.addressName || "",
+              isDefault: true,
+              userId: isGuest ? undefined : user.id,
+            }
+          : undefined,
+      items:
+        cart?.items.map((item) => ({
+          id: item.id,
+          quantity: item.quantity,
+          variantId: "",
+          variant: {} as variant,
+        })) || [],
+      isGuest,
+      total: subtotal?.toString() || "0",
+      paymentMethod: values.paymentMethod,
+      cardName: values.cardName,
+      cardNumber: values.cardNumber,
+      expiryDate: values.expiryDate,
+      cvv: values.cvv,
+      notes: values.notes,
+    };
+
+    // Simulate API call
+    const data = user
+      ? await OrderService.createOrder(orderData)
+      : await OrderService.createGuestOrder(orderData);
+    if (data.status) {
+      reset();
+      const orderNumber = "ORD-" + String(data.order.id).padStart(5, "0");
+      console.log(values);
+      // Redirect to confirmation page after successful checkout
+      setTimeout(() => {
+        navigate(`/checkout/confirmation?orderId=${orderNumber}`);
+      }, 2000);
+    } else {
+      console.log(data);
+      showToast({
+        title: data.message,
+        type: "error",
+      });
+    }
     setIsSubmitting(false);
     setIsSuccess(true);
-
-    // Redirect to confirmation page after successful checkout
-    setTimeout(() => {
-      navigate("/checkout/confirmation");
-    }, 2000);
   }
 
   if (isSuccess) {
@@ -236,10 +314,9 @@ export default function CheckoutForm({ addresses }: { addresses: Address[] }) {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        onError={(error) => {
-          console.log(error);
-        }}
+        onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          console.error("Validation errors:", errors); // Log validation errors
+        })}
         className="space-y-8"
       >
         <Card>
@@ -328,6 +405,21 @@ export default function CheckoutForm({ addresses }: { addresses: Address[] }) {
             {/* Show address fields only if adding a new address or user is not logged in */}
             {(!user || addressOption === "new") && (
               <>
+                {user && (
+                  <FormField
+                    control={form.control}
+                    name="addressName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Address Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Home, Work..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
                 <FormField
                   control={form.control}
                   name="address"
@@ -341,7 +433,6 @@ export default function CheckoutForm({ addresses }: { addresses: Address[] }) {
                     </FormItem>
                   )}
                 />
-
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
@@ -419,16 +510,16 @@ export default function CheckoutForm({ addresses }: { addresses: Address[] }) {
                       className="flex flex-col space-y-1"
                     >
                       <Tabs
-                        defaultValue="credit"
+                        defaultValue="CREDIT"
                         className="w-full"
                         value={field.value}
                         onValueChange={field.onChange}
                       >
                         <TabsList className="grid w-full grid-cols-2">
-                          <TabsTrigger value="credit">Credit Card</TabsTrigger>
-                          <TabsTrigger value="paypal">PayPal</TabsTrigger>
+                          <TabsTrigger value="CREDIT">Credit Card</TabsTrigger>
+                          <TabsTrigger value="PAYPAL">Paypal</TabsTrigger>
                         </TabsList>
-                        <TabsContent value="credit" className="pt-4">
+                        <TabsContent value="CREDIT" className="pt-4">
                           <div className="space-y-4">
                             <FormField
                               control={form.control}
@@ -491,10 +582,10 @@ export default function CheckoutForm({ addresses }: { addresses: Address[] }) {
                             </div>
                           </div>
                         </TabsContent>
-                        <TabsContent value="paypal" className="pt-4">
+                        <TabsContent value="PAYPAL" className="pt-4">
                           <div className="flex items-center justify-center p-6 border rounded-md">
                             <p className="text-center text-muted-foreground">
-                              You will be redirected to PayPal to complete your
+                              You will be redirected to Paypal to complete your
                               payment after reviewing your order.
                             </p>
                           </div>

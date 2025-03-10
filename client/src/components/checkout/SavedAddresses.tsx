@@ -45,7 +45,7 @@ export default function SavedAddresses({
                     className={`cursor-pointer transition-colors ${
                       selectedAddressId === address.id ? "border-primary bg-primary/5" : "hover:border-primary/50"
                     }`}
-                    onClick={() => onAddressSelect(address.id)}
+                    onClick={() => onAddressSelect(address.id || "")}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between">

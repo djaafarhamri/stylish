@@ -7,6 +7,7 @@ interface CartContextType {
   cart: Cart | undefined;
   add: (item: variant, quantity: number) => Promise<void>;
   remove: (id: string) => Promise<void>;
+  reset: () => void
 }
 
 // Create the context
