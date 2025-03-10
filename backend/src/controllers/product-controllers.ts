@@ -20,7 +20,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
 
     const filters: any = {};
 
-    if (category) filters.category = category;
+    if (category) filters.categoryName = category;
     if (minPrice) filters.price = { gte: Number(minPrice) };
     if (maxPrice) filters.price = { ...filters.price, lte: Number(maxPrice) };
     if (search) filters.name = { contains: search, mode: "insensitive" };
@@ -54,6 +54,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
 
     const totalCount = await prisma.product.count({ where: filters });
 
+    console.log(filters)
     const products = await prisma.product.findMany({
       where: filters,
       orderBy: { [sortBy as string]: sortOrder },
@@ -161,7 +162,7 @@ export const createProduct = async (req: Request, res: Response) => {
     name,
     description,
     price,
-    categoryId,
+    categoryName,
     imageUrl,
     images,
     inStock,
@@ -176,7 +177,7 @@ export const createProduct = async (req: Request, res: Response) => {
         name,
         description,
         price,
-        categoryid: categoryId, // Ensure categoryId is correctly referenced
+        categoryName, // Ensure categoryId is correctly referenced
         imageUrl,
         images,
         inStock,
@@ -217,7 +218,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     name,
     description,
     price,
-    categoryId,
+    categoryName,
     imageUrl,
     images,
     inStock,
@@ -240,7 +241,7 @@ export const updateProduct = async (req: Request, res: Response) => {
         name,
         description,
         price,
-        categoryid: categoryId,
+        categoryName: categoryName,
         imageUrl,
         images,
         inStock,

@@ -3,7 +3,7 @@ import { PrismaClient, Size } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function seedProducts() {
-    const categoryNames = ["Men", "Woman", "Accessories"];
+    const categoryNames = ["Men", "Woman", "Accessories", "ALL"];
     const colorData = [
         { name: "Red", hex: "#FF0000" },
         { name: "Blue", hex: "#0000FF" },
@@ -50,7 +50,7 @@ async function seedProducts() {
                     description: `Description for product ${i + 1}`,
                     price: parseFloat((Math.random() * 100).toFixed(2)),
                     salePrice: Math.random() > 0.5?parseFloat((Math.random() * 50).toFixed(2)):0,
-                    categoryid: category.id,
+                    categoryName: category.name,
                     imageUrl: `https://picsum.photos/200/300?random=${i}`,
                     images: [
                         `https://picsum.photos/200/300?random=${i}1`,

@@ -153,10 +153,10 @@ export default function ProductsFilter({
             to="#"
             onClick={(e) => {
               e.preventDefault();
-              setCategory("men");
+              setCategory("Men");
             }}
             className={`block ${
-              isActiveCategory("men")
+              isActiveCategory("Men")
                 ? "text-primary"
                 : "text-muted-foreground hover:text-foreground"
             }`}
@@ -167,7 +167,7 @@ export default function ProductsFilter({
             to="#"
             onClick={(e) => {
               e.preventDefault();
-              setCategory("women");
+              setCategory("Women");
             }}
             className={`block ${
               isActiveCategory("women")
@@ -181,10 +181,10 @@ export default function ProductsFilter({
             to="#"
             onClick={(e) => {
               e.preventDefault();
-              setCategory("accessories");
+              setCategory("Accessories");
             }}
             className={`block ${
-              isActiveCategory("accessories")
+              isActiveCategory("Accessories")
                 ? "text-primary"
                 : "text-muted-foreground hover:text-foreground"
             }`}

@@ -42,23 +42,23 @@ model Address {
 }
 
 model Product {
-  id          String           @id @default(uuid())
-  name        String
-  description String
-  price       Decimal
-  salePrice   Decimal?
-  category    Category         @relation(fields: [categoryid], references: [id])
-  categoryid  String
-  imageUrl    String
-  images      String[]
-  inStock     Boolean          @default(true)
-  inNew       Boolean          @default(true)
-  isFeatured  Boolean          @default(false)
-  rating      Float            @default(0)
-  reviewCount Int              @default(0)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  variants    ProductVariant[]
+  id           String           @id @default(uuid())
+  name         String
+  description  String
+  price        Decimal
+  salePrice    Decimal?
+  category     Category         @relation(fields: [categoryName], references: [name])
+  categoryName String           
+  imageUrl     String
+  images       String[]
+  inStock      Boolean          @default(true)
+  inNew        Boolean          @default(true)
+  isFeatured   Boolean          @default(false)
+  rating       Float            @default(0)
+  reviewCount  Int              @default(0)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  variants     ProductVariant[]
 }
 
 model ProductVariant {
@@ -91,14 +91,14 @@ model Color {
 
 // Order Model
 model Order {
-  id                Int         @id @default(autoincrement())
-  user              User?       @relation(fields: [userId], references: [id])
+  id                Int           @id @default(autoincrement())
+  user              User?         @relation(fields: [userId], references: [id])
   userId            String?
   guestFirstName    String?
   guestLastName     String?
   guestPhone        String?
   guestEmail        String?
-  shippingAddress   Address     @relation(fields: [shippingAddressId], references: [id])
+  shippingAddress   Address       @relation(fields: [shippingAddressId], references: [id])
   shippingAddressId String
   isGuest           Boolean
   items             OrderItem[]
@@ -109,9 +109,9 @@ model Order {
   expiryDate        String?
   cvv               String?
   notes             String?
-  status            OrderStatus @default(PENDING)
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  status            OrderStatus   @default(PENDING)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 }
 
 // OrderItem Model
