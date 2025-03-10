@@ -304,6 +304,9 @@ export const getMyAddresses = async (req: Request, res: Response) => {
   try {
     const addresses = await prisma.address.findMany({
       where: { userId: req.userId },
+      orderBy: {
+        isDefault: "desc"
+      }
     });
 
     res.json({

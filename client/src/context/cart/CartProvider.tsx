@@ -19,6 +19,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           if (data.status === true) {
             setCart(data.cart);
           }
+          localStorage.setItem("guestCart", JSON.stringify(data?.cart?.items));
+          
         } else {
           // If no user, get cart from localStorage
           const guestCart = JSON.parse(
@@ -78,7 +80,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         if (updatedCart.status) {
           setCart(updatedCart.cart);
         }
-        putItemToStorage(item, quantity);
+        localStorage.setItem("guestCart", JSON.stringify(updatedCart?.cart?.items));
       } else {
         // Guest user logic
         putItemToStorage(item, quantity);
@@ -111,7 +113,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         if (updatedCart.status) {
           setCart(updatedCart.cart);
         }
-        removeItemFromStorage(variantId);
+        
+        localStorage.setItem("guestCart", JSON.stringify(updatedCart?.cart?.items));
+
       } else {
         removeItemFromStorage(variantId);
       }

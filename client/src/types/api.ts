@@ -177,7 +177,6 @@ export interface CartItem {
   variantId: string;
   variant: variant;
   quantity: number;
-  price: number;
 }
 
 export interface Address {

@@ -16,6 +16,7 @@ export default function CartPage() {
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
 
   const updateQuantity = async (variantId: string, newQuantity: number, maxQuantity: number) => {
+    console.log(variantId, newQuantity, maxQuantity)
     if (newQuantity < 1 || newQuantity > maxQuantity) return;
     try {
       await add({ id: variantId } as variant, newQuantity);
@@ -118,7 +119,8 @@ export default function CartPage() {
                           <span className="font-medium">
                             $
                             {(parseFloat(item.variant?.product?.salePrice)
-                              ? parseFloat(item.variant?.product?.salePrice)
+                              ? parseFloat(item.variant?.product?.salePrice)*
+                              item.quantity
                               : parseFloat(item.variant?.product?.price) *
                                 item.quantity
                             ).toFixed(2)}
