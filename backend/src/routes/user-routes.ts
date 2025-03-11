@@ -1,6 +1,6 @@
 import express from "express";
 import { register, login, getMe, updateProfile, changePassword, addAddress, updateAddress, deleteAddress, getAddress, getMyAddresses, logout, setDefaultAddress } from "../controllers/user-controllers";
-import { isAuthenticated } from "../middlewares/auth-middleware";
+import { requireAuth } from "../middlewares/auth-middleware";
 
 const router = express.Router();
 
@@ -10,16 +10,16 @@ router.post("/login", login);
 router.get("/logout", logout);
 
 // Protected routes
-router.get("/me", isAuthenticated, getMe);
-router.put("/update-profile", isAuthenticated, updateProfile);
-router.put("/change-password", isAuthenticated, changePassword);
+router.get("/me", requireAuth, getMe);
+router.put("/update-profile", requireAuth, updateProfile);
+router.put("/change-password", requireAuth, changePassword);
 
-router.post("/address", isAuthenticated, addAddress);
-router.put("/address/:id", isAuthenticated, updateAddress);
-router.get("/address/me", isAuthenticated, getMyAddresses);
+router.post("/address", requireAuth, addAddress);
+router.put("/address/:id", requireAuth, updateAddress);
+router.get("/address/me", requireAuth, getMyAddresses);
 router.get("/address/:id", getAddress);
-router.get("/address/default/:id", isAuthenticated, setDefaultAddress);
-router.delete("/address/:id", isAuthenticated, deleteAddress);
+router.get("/address/default/:id", requireAuth, setDefaultAddress);
+router.delete("/address/:id", requireAuth, deleteAddress);
 
 
 export default router;

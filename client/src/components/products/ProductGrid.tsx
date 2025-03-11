@@ -15,7 +15,7 @@ export default function ProductGrid({ products, total }: ProductGridProps) {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const currentPage = Number.parseInt(searchParams.get("page") || "1", 10)
-  const limit = Number.parseInt(searchParams.get("limit") || "24", 10)
+  const limit = Number.parseInt(searchParams.get("limit") || "10", 10)
   const sortBy = searchParams.get("sortBy") || "createdAt"
 
   const totalPages = Math.ceil(total / limit)

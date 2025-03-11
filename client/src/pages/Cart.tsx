@@ -16,7 +16,6 @@ export default function CartPage() {
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
 
   const updateQuantity = async (variantId: string, newQuantity: number, maxQuantity: number) => {
-    console.log(variantId, newQuantity, maxQuantity)
     if (newQuantity < 1 || newQuantity > maxQuantity) return;
     try {
       await add({ id: variantId } as variant, newQuantity);

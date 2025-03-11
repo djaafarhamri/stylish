@@ -3,15 +3,18 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import type { Color, ProductFilters } from "../../types/api";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
-import ProductsSearch from "./ProductSearch";
 import { ProductService } from "../../services/product-service";
 
 interface ProductsFilterProps {
   initialFilters: ProductFilters;
+  hidden: boolean;
+  closeFilters: () => void
 }
 
 export default function ProductsFilter({
   initialFilters,
+  hidden,
+  closeFilters
 }: ProductsFilterProps) {
   const [minPrice, setMinPrice] = useState(
     initialFilters.minPrice?.toString() || ""
@@ -109,6 +112,7 @@ export default function ProductsFilter({
 
     // Navigate to the same page but with updated search params
     navigate(`${pathname}?${params.toString()}`);
+    closeFilters()
   };
 
   const setCategory = (category: string | null) => {
@@ -129,8 +133,7 @@ export default function ProductsFilter({
   };
 
   return (
-    <div className="hidden md:block space-y-6">
-      <ProductsSearch initialQuery={initialFilters.search} />
+    <div className={`${hidden ? "hidden md:block":"block"} space-y-6`}>
 
       <div>
         <h3 className="mb-4 text-lg font-semibold">Categories</h3>
@@ -140,6 +143,7 @@ export default function ProductsFilter({
             onClick={(e) => {
               e.preventDefault();
               setCategory(null);
+              closeFilters()
             }}
             className={`block ${
               isActiveCategory(null)
@@ -154,6 +158,7 @@ export default function ProductsFilter({
             onClick={(e) => {
               e.preventDefault();
               setCategory("Men");
+              closeFilters()
             }}
             className={`block ${
               isActiveCategory("Men")
@@ -168,6 +173,7 @@ export default function ProductsFilter({
             onClick={(e) => {
               e.preventDefault();
               setCategory("Women");
+              closeFilters()
             }}
             className={`block ${
               isActiveCategory("women")
@@ -182,6 +188,7 @@ export default function ProductsFilter({
             onClick={(e) => {
               e.preventDefault();
               setCategory("Accessories");
+              closeFilters()
             }}
             className={`block ${
               isActiveCategory("Accessories")

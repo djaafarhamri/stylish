@@ -39,7 +39,6 @@ export default function OrderDetailsPage() {
   const [order, setOrder] = useState<Order>();
 
   useEffect(() => {
-    console.log(orderNumber?.split("-")[1])
     const getOrder = async () => {
       if (orderNumber?.split("-")[1]) {
         const data = await OrderService.getOrderById(

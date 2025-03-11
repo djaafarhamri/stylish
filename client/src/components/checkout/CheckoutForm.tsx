@@ -276,7 +276,6 @@ export default function CheckoutForm({ addresses }: { addresses: Address[] }) {
     if (data.status) {
       reset();
       const orderNumber = "ORD-" + String(data.order.id).padStart(5, "0");
-      console.log(values);
       // Redirect to confirmation page after successful checkout
       setTimeout(() => {
         navigate(`/checkout/confirmation?orderId=${orderNumber}`);

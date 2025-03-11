@@ -4,12 +4,12 @@ import {
     addToCart,
     removeCartItem,
 } from "../controllers/cart-controllers";
-import { isAuthenticated } from "../middlewares/auth-middleware";
+import { requireAuth } from "../middlewares/auth-middleware";
 
 const router = express.Router();
 
-router.get("/", isAuthenticated, getCart);
-router.post("/", isAuthenticated, addToCart);
-router.delete("/items/:variantId", isAuthenticated, removeCartItem);
+router.get("/", requireAuth, getCart);
+router.post("/", requireAuth, addToCart);
+router.delete("/items/:variantId", requireAuth, removeCartItem);
 
 export default router;

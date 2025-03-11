@@ -1,6 +1,5 @@
 import { Route, Routes } from "react-router";
 import Home from "./pages/Home";
-import Test from "./Test";
 import Navbar from "./components/Navbar";
 import SignupPage from "./pages/Signup";
 import LoginPage from "./pages/Login";
@@ -28,7 +27,6 @@ function App() {
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/order/:id" element={<OrderDetailsPage />} />
         <Route path="/products/:id" element={<ProductContent />} />
-        <Route path="/test" element={<Test />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/account" element={<AccountPage />} />
         </Route>

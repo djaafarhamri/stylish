@@ -190,7 +190,6 @@ export const getOrders = async (req: Request, res: Response) => {
 export const getOrderById = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { userId } = req
-
   try {
     const order = await prisma.order.findUnique({
       where: { id: parseInt(id) },
@@ -205,7 +204,7 @@ export const getOrderById = async (req: Request, res: Response) => {
       res.status(404).json({ message: "Order not found" });
       return;
     }
-    if (userId !== order.userId) {
+    if (userId && userId !== order.userId) {
       res.status(403).json({ message: "not found authorised" });
       return;
     }

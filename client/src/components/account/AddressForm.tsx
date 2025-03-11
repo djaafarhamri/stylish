@@ -55,7 +55,7 @@ export default function AddressForm({
 
     try {
       if (address) {
-        const data = await AuthService.updateAddress(formData, address.id);
+        const data = await AuthService.updateAddress(formData, address.id || "");
         if (data.status) {
           setAddresses((prevAddresses) => {
             const updatedAddresses = prevAddresses.map((addr) =>

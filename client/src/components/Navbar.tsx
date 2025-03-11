@@ -1,10 +1,19 @@
-
-import { ShoppingBag, CircleUserRound } from "lucide-react";
 import { Button } from "./ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "./ui/sheet";
 import { Link } from "react-router";
 
+import NavIcons from "./NavIcons";
+import { useState } from "react";
+
 export default function Navbar() {
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-10 border-b bg-background">
@@ -26,37 +35,37 @@ export default function Navbar() {
             Shop
           </Link>
           <Link
-            to="/categories/men"
+            to="/products?category=Men&page=1"
             className="text-sm font-medium hover:underline underline-offset-4"
           >
             Men
           </Link>
           <Link
-            to="/categories/women"
+            to="/products?category=Women&page=1"
             className="text-sm font-medium hover:underline underline-offset-4"
           >
             Women
           </Link>
+          <Link
+            to="/products?category=Accessories&page=1"
+            className="text-sm font-medium hover:underline underline-offset-4"
+          >
+            Accssories
+          </Link>
         </nav>
         <div className="flex items-center gap-4">
-          <Link to="/cart">
-            <Button variant="outline" size="icon" className="relative">
-              <ShoppingBag className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                0
-              </span>
-            </Button>
-          </Link>
-          <Link to="/account" className="block">
-            <Button variant="outline" size="icon">
-              <CircleUserRound className="h-5 w-5" />
-            </Button>
-          </Link>
-
+          <div className="hidden md:flex items-center gap-4">
+            <NavIcons setIsOpen={setIsOpen} />
+          </div>
           {/* Mobile Menu */}
-          <Sheet>
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="md:hidden">
+              <Button
+                onClick={() => setIsOpen(true)}
+                variant="outline"
+                size="icon"
+                className="md:hidden"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -76,18 +85,56 @@ export default function Navbar() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right">
+              <SheetHeader>
+                <SheetTitle>
+                  <Link
+                    onClick={() => setIsOpen(false)}
+                    to="/"
+                    className="flex items-center gap-2 text-xl font-bold"
+                  >
+                    STYLISH
+                  </Link>
+                </SheetTitle>
+                <SheetDescription>Elevate Your Elegance.</SheetDescription>
+              </SheetHeader>
+              <div className="flex items-center gap-4 mt-10">
+                <NavIcons setIsOpen={setIsOpen} />
+              </div>
               <nav className="flex flex-col gap-4 mt-8">
-                <Link to="/" className="text-lg font-medium">
+                <Link
+                  onClick={() => setIsOpen(false)}
+                  to="/"
+                  className="text-lg font-medium"
+                >
                   Home
                 </Link>
-                <Link to="/products" className="text-lg font-medium">
+                <Link
+                  onClick={() => setIsOpen(false)}
+                  to="/products"
+                  className="text-lg font-medium"
+                >
                   Shop
                 </Link>
-                <Link to="/categories/men" className="text-lg font-medium">
+                <Link
+                  onClick={() => setIsOpen(false)}
+                  to="/products?category=Men&page=1"
+                  className="text-lg font-medium"
+                >
                   Men
                 </Link>
-                <Link to="/categories/women" className="text-lg font-medium">
+                <Link
+                  onClick={() => setIsOpen(false)}
+                  to="/products?category=Women&page=1"
+                  className="text-lg font-medium"
+                >
                   Women
+                </Link>
+                <Link
+                  onClick={() => setIsOpen(false)}
+                  to="/products?category=Accessories&page=1"
+                  className="text-lg font-medium"
+                >
+                  Accessories
                 </Link>
               </nav>
             </SheetContent>

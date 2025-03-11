@@ -54,7 +54,6 @@ export const getAllProducts = async (req: Request, res: Response) => {
 
     const totalCount = await prisma.product.count({ where: filters });
 
-    console.log(filters)
     const products = await prisma.product.findMany({
       where: filters,
       orderBy: { [sortBy as string]: sortOrder },
