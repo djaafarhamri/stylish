@@ -183,7 +183,7 @@ export default function ProductContent() {
         <div className="space-y-4">
           <div className="overflow-hidden rounded-lg">
             <img
-              src={product?.imageUrl || "/placeholder.svg"}
+              src={product?.mainImage.url || "/placeholder.svg"}
               alt={product?.name}
               className="h-full w-full object-cover"
             />
@@ -192,7 +192,7 @@ export default function ProductContent() {
             {product?.images?.map((image, index) => (
               <div key={index} className="overflow-hidden rounded-lg border">
                 <img
-                  src={image || "/placeholder.svg"}
+                  src={image.url || "/placeholder.svg"}
                   alt={`${product?.name} - View ${index + 1}`}
                   className="h-full w-full object-cover"
                 />

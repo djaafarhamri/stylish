@@ -76,7 +76,7 @@ export default function OrderSummary() {
             <div key={item.id} className="flex items-start space-x-4">
               <div className="relative h-20 w-20 overflow-hidden rounded-md border">
                 <img
-                  src={item?.variant?.product?.imageUrl || "/placeholder.svg"}
+                  src={item?.variant?.product?.mainImage.url || "/placeholder.svg"}
                   alt={item?.variant?.product?.name}
                   className="w-full h-full object-cover"
                 />

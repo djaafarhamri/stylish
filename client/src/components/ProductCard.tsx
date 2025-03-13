@@ -162,7 +162,7 @@ export default function ProductCard({ product }: { product: Product }) {
       <div className="relative aspect-square overflow-hidden">
         <Link to={`/products/${product.id}`}>
           <img
-            src={product.imageUrl || "/placeholder.svg"}
+            src={product.mainImage.url || "/placeholder.svg"}
             alt={product.name}
             className="h-full w-full object-cover transition-transform group-hover:scale-105"
           />

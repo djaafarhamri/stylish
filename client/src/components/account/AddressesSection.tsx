@@ -79,17 +79,17 @@ export default function AddressesSection() {
           </CardContent>
           <CardFooter className="flex justify-between">
             <div className="flex space-x-2">
-              <Button variant="outline" size="sm" onClick={() => setEditingAddressId(address.id)}>
+              <Button variant="outline" size="sm" onClick={() => setEditingAddressId(address.id || "")}>
                 <Pencil className="h-4 w-4 mr-2" />
                 Edit
               </Button>
-              <Button variant="outline" size="sm" onClick={() => handleDelete(address.id)}>
+              <Button variant="outline" size="sm" onClick={() => handleDelete(address.id || "")}>
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete
               </Button>
             </div>
             {!address.isDefault && (
-              <Button variant="ghost" size="sm" onClick={() => handleSetDefault(address.id)}>
+              <Button variant="ghost" size="sm" onClick={() => handleSetDefault(address.id || "")}>
                 Set as default
               </Button>
             )}

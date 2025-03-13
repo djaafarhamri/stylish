@@ -1,21 +1,33 @@
 // Product types
 export interface Product {
-  id: string;
+  id?: string;
   name: string;
   description: string;
   price: string;
-  salePrice: string;
   status: string;
-  category?: category;
-  categoryId?: string;
-  images: Image[];
-  mainImage: Image;
+  salePrice: string;
+  category: category;
+  categoryId: string;
+  mainImage: Image | File;
+  mainImageId: string;
+  images: (Image | File)[];
   createdAt?: string;
   updatedAt?: string;
-  rating: number;
-  reviewCount: number;
-  inNew: boolean;
-  isFeatured: boolean;
+  rating?: number;
+  reviewCount?: number;
+  inNew?: boolean;
+  isFeatured?: boolean;
+  variants: variant[];
+}
+export interface CreateProduct {
+  name: string;
+  description: string;
+  price: number;
+  status: string;
+  salePrice?: number;
+  category: string;
+  images: (Image | File)[];
+  mainImage: Image | File;
   variants: variant[];
 }
 
@@ -35,11 +47,12 @@ export interface variant {
   color: Color;
   size: string;
   quantity: number;
-  product: Product;
-  productId: string;
+  product?: Product;
+  productId?: string;
 }
 
 export interface Color {
+  id: string;
   name: string;
   hex: string;
 }

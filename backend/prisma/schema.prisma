@@ -48,9 +48,11 @@ model Product {
   price        Decimal
   salePrice    Decimal?
   category     Category         @relation(fields: [categoryName], references: [name])
-  categoryName String           
-  imageUrl     String
-  images       String[]
+  categoryName String
+  images       Image[]          @relation("ProductImages")
+  mainImage    Image            @relation("ProductMainImage", fields: [mainImageId], references: [id])
+  mainImageId  String           @unique
+  status       String           @default("active")
   inStock      Boolean          @default(true)
   inNew        Boolean          @default(true)
   isFeatured   Boolean          @default(false)
@@ -61,13 +63,24 @@ model Product {
   variants     ProductVariant[]
 }
 
+model Image {
+  id        String @id @default(uuid())
+  url       String
+  public_id String
+
+  product   Product? @relation("ProductImages", fields: [productId], references: [id])
+  productId String?
+
+  mainProduct Product? @relation("ProductMainImage")
+}
+
 model ProductVariant {
   id        String  @id @default(uuid())
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
   color     Color   @relation(fields: [colorId], references: [id])
   colorId   String
-  size      Size
+  size      String
   quantity  Int     @default(0)
 
   CartItem CartItem[]
@@ -117,7 +130,7 @@ model Order {
 // OrderItem Model
 model OrderItem {
   id        String         @id @default(uuid())
-  order     Order          @relation(fields: [orderId], references: [id])
+  order     Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId   Int
   variant   ProductVariant @relation(fields: [variantId], references: [id])
   variantId String
@@ -137,21 +150,11 @@ model Cart {
 // CartItem Model
 model CartItem {
   id        String         @id @default(uuid())
-  cart      Cart           @relation(fields: [cartId], references: [id])
+  cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
   cartId    String
   variant   ProductVariant @relation(fields: [variantId], references: [id])
   variantId String
   quantity  Int
-}
-
-// Enums
-enum Size {
-  XS
-  S
-  M
-  L
-  XL
-  XXL
 }
 
 enum UserRole {

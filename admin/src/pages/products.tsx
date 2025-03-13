@@ -1,10 +1,29 @@
-
-import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
-import { Plus, Search, Filter, MoreHorizontal, Edit, Trash, Eye } from "lucide-react"
-import { Button } from "../components/ui/button"
-import { Input } from "../components/ui/input"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../components/ui/dropdown-menu"
+import { useState, useEffect, useMemo } from "react";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
+import {
+  Plus,
+  Search,
+  Filter,
+  MoreHorizontal,
+  Edit,
+  Trash,
+  Eye,
+  ChevronRight,
+  ChevronLeft,
+} from "lucide-react";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -12,73 +31,124 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../components/ui/dialog"
-import { useToast } from "../components/ui/use-toast"
-import { Badge } from "../components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
-
-interface Product {
-  id: string
-  name: string
-  category: string
-  price: number
-  stock: number
-  status: "active" | "draft" | "archived"
-  image: string
-}
+} from "../components/ui/dialog";
+import { useToast } from "../components/ui/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import { ProductService } from "@/services/product-service";
+import { Product } from "@/types/api";
+import { Badge } from "@/components/ui/badge";
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("all")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [productToDelete, setProductToDelete] = useState<string | null>(null)
-  const { toast } = useToast()
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // Mock categories
-  const categories = ["T-Shirts", "Jeans", "Hoodies", "Jackets", "Shoes", "Accessories"]
+  const categories = ["Men", "Women", "Accessories"];
+
+  const [total, setTotal] = useState(0);
+
+  const [searchParams] = useSearchParams();
+
+  const filters = useMemo(
+    () => ({
+      category: searchParams.get("category") || "all",
+      search: searchParams.get("search") || undefined,
+      status: searchParams.get("status") || "all",
+      sizes: searchParams.get("sizes") || undefined,
+      colors: searchParams.get("colors") || undefined,
+      sortBy:
+        (searchParams.get("sortBy") as "price" | "createdAt" | "popular") ||
+        "createdAt",
+      page: searchParams.get("page")
+        ? Number.parseInt(searchParams.get("page") || "1", 10)
+        : 1,
+      limit: searchParams.get("limit")
+        ? Number.parseInt(searchParams.get("limit") || "10", 10)
+        : 10,
+      minPrice: searchParams.get("minPrice")
+        ? Number.parseInt(searchParams.get("minPrice") as string, 10)
+        : undefined,
+      maxPrice: searchParams.get("maxPrice")
+        ? Number.parseInt(searchParams.get("maxPrice") as string, 10)
+        : undefined,
+    }),
+    [searchParams]
+  );
 
   useEffect(() => {
-    // Simulate API call to fetch products
     const fetchProducts = async () => {
       try {
-        // In a real app, you would fetch this data from your API
-        // const response = await fetch('http://localhost:3001/api/products');
-        // const data = await response.json();
-
-        // For demo purposes, we'll use mock data
-        setTimeout(() => {
-          const mockProducts: Product[] = Array.from({ length: 20 }, (_, i) => ({
-            id: `prod-${i + 1}`,
-            name: `Product ${i + 1}`,
-            category: categories[Math.floor(Math.random() * categories.length)],
-            price: Math.floor(Math.random() * 100) + 20,
-            stock: Math.floor(Math.random() * 100),
-            status: ["active", "draft", "archived"][Math.floor(Math.random() * 3)] as "active" | "draft" | "archived",
-            image: `/placeholder.svg?height=80&width=80`,
-          }))
-
-          setProducts(mockProducts)
-          setIsLoading(false)
-        }, 1000)
+        const data = await ProductService.getProducts(filters);
+        if (data.status) {
+          setProducts(data.products);
+          setTotal(data.total);
+        }
+        setIsLoading(false);
       } catch (error) {
-        console.error("Error fetching products:", error)
-        setIsLoading(false)
+        console.error("Error fetching products:", error);
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchProducts()
-  }, [])
+    fetchProducts();
+  }, [searchParams]);
+
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  const totalPages = Math.ceil(total / filters.limit);
+
+  // const handleSortChange = (value: string) => {
+  //   const params = new URLSearchParams(searchParams.toString());
+  //   params.set("sortBy", value);
+  //   setSearchParams(params);
+  //   navigate(`${pathname}?${params.toString()}`);
+  // };
+
+  const handlePageChange = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", page.toString());
+    navigate(`${pathname}?${params.toString()}`);
+  };
+
+  const handleLimitChange = (limit: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("limit", limit.toString());
+    params.set("page", "1");
+    navigate(`${pathname}?${params.toString()}`);
+  };
+
+  const handleCategoryChange = (category: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("category", category);
+    params.set("page", "1");
+    navigate(`${pathname}?${params.toString()}`);
+  };
+
+  const handleStatusChange = (status: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("status", status);
+    params.set("page", "1");
+    navigate(`${pathname}?${params.toString()}`);
+  };
 
   const handleDeleteProduct = (productId: string) => {
-    setProductToDelete(productId)
-    setIsDeleteDialogOpen(true)
-  }
+    setProductToDelete(productId);
+    setIsDeleteDialogOpen(true);
+  };
 
   const confirmDeleteProduct = async () => {
-    if (!productToDelete) return
+    if (!productToDelete) return;
 
     try {
       // In a real app, you would make an API call to delete the product
@@ -87,52 +157,81 @@ export default function ProductsPage() {
       // });
 
       // For demo purposes, we'll just update the state
-      setProducts(products.filter((product) => product.id !== productToDelete))
+      setProducts(products.filter((product) => product.id !== productToDelete));
 
       toast({
         title: "Product deleted",
         description: "The product has been successfully deleted.",
-      })
+      });
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to delete the product. Please try again.",
-      })
+      });
     } finally {
-      setIsDeleteDialogOpen(false)
-      setProductToDelete(null)
+      setIsDeleteDialogOpen(false);
+      setProductToDelete(null);
     }
-  }
+  };
 
-  // Filter products based on search query and filters
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = categoryFilter === "all" || product.category === categoryFilter
-    const matchesStatus = statusFilter === "all" || product.status === statusFilter
+  // Pagination states
+  // Generate page numbers array for pagination
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxVisiblePages = 5;
 
-    return matchesSearch && matchesCategory && matchesStatus
-  })
+    if (totalPages <= maxVisiblePages) {
+      // Show all pages if total pages are less than max visible
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      // Show first page, current and surrounding pages, and last page
+      const leftBoundary = Math.max(1, filters.page - 1);
+      const rightBoundary = Math.min(totalPages, filters.page + 1);
+
+      if (leftBoundary > 1) {
+        pageNumbers.push(1);
+        if (leftBoundary > 2) {
+          pageNumbers.push("ellipsis");
+        }
+      }
+
+      for (let i = leftBoundary; i <= rightBoundary; i++) {
+        pageNumbers.push(i);
+      }
+
+      if (rightBoundary < totalPages) {
+        if (rightBoundary < totalPages - 1) {
+          pageNumbers.push("ellipsis");
+        }
+        pageNumbers.push(totalPages);
+      }
+    }
+
+    return pageNumbers;
+  };
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case "active":
-        return "success"
+        return "success";
       case "draft":
-        return "secondary"
+        return "secondary";
       case "archived":
-        return "destructive"
+        return "destructive";
       default:
-        return "default"
+        return "default";
     }
-  }
+  };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -159,12 +258,12 @@ export default function ProductsPage() {
           />
         </div>
         <div className="flex gap-2">
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <Select value={filters.category} onValueChange={handleCategoryChange}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value={"all"}>All Categories</SelectItem>
               {categories.map((category) => (
                 <SelectItem key={category} value={category}>
                   {category}
@@ -173,15 +272,31 @@ export default function ProductsPage() {
             </SelectContent>
           </Select>
 
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={filters.status || "all"} onValueChange={handleStatusChange}>
             <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="archived">Archived</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={filters.limit.toString()}
+            onValueChange={(value) => {
+              handleLimitChange(parseInt(value));
+            }}
+          >
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Per page" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5">5 per page</SelectItem>
+              <SelectItem value="10">10 per page</SelectItem>
+              <SelectItem value="20">20 per page</SelectItem>
+              <SelectItem value="50">50 per page</SelectItem>
             </SelectContent>
           </Select>
 
@@ -206,31 +321,48 @@ export default function ProductsPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredProducts.length === 0 ? (
+              {products.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-6 text-center text-muted-foreground">
+                  <td
+                    colSpan={6}
+                    className="py-6 text-center text-muted-foreground"
+                  >
                     No products found.
                   </td>
                 </tr>
               ) : (
-                filteredProducts.map((product) => (
+                products.map((product, index) => (
                   <tr key={product.id} className="border-t">
                     <td className="py-3 px-4">
-                      <div className="flex items-center gap-3">
+                      <div className="flex max-w-fit h-20 items-center gap-3">
                         <img
-                          src={product.image || "/placeholder.svg"}
-                          alt={product.name}
-                          className="h-10 w-10 rounded object-cover"
+                          src={
+                            product.mainImage instanceof File
+                              ? URL.createObjectURL(product.mainImage) // If image is a File, create a temporary URL
+                              : product.mainImage.url || "/placeholder.svg" // If image is a URL string, use it; otherwise, use the placeholder
+                          }
+                          alt={`Product ${index + 1}`}
+                          className="w-full h-full object-cover"
                         />
                         <span className="font-medium">{product.name}</span>
                       </div>
                     </td>
-                    <td className="py-3 px-4">{product.category}</td>
-                    <td className="text-right py-3 px-4">${product.price.toFixed(2)}</td>
-                    <td className="text-right py-3 px-4">{product.stock}</td>
+                    <td className="py-3 px-4">{product.category?.name}</td>
+                    <td className="text-right py-3 px-4">
+                      ${parseFloat(product.price).toFixed(2)}
+                    </td>
+                    <td className="text-right py-3 px-4">
+                      {product.variants.reduce(
+                        (sum, variant) => sum + variant.quantity,
+                        0
+                      )}
+                    </td>
                     <td className="py-3 px-4">
-                      <Badge variant={getStatusBadgeVariant(product.status) as any}>
-                        {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
+                      <Badge
+                        variant={getStatusBadgeVariant(product.status) as any}
+                      >
+                        {product.status.charAt(0).toUpperCase() +
+                          product.status.slice(1)}
                       </Badge>
                     </td>
                     <td className="text-right py-3 px-4">
@@ -255,7 +387,7 @@ export default function ProductsPage() {
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => handleDeleteProduct(product.id)}
+                            onClick={() => handleDeleteProduct(product.id || "")}
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash className="h-4 w-4 mr-2" />
@@ -272,17 +404,75 @@ export default function ProductsPage() {
         </div>
       </div>
 
+      {/* Pagination */}
+      {products.length > 0 && totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            Showing {products.length} of {total} products
+          </div>
+          <div className="flex items-center space-x-2">
+            {/* Pagination controls */}
+            <div className="flex items-center space-x-1">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => handlePageChange(filters.page - 1)}
+                disabled={filters.page === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span className="sr-only">Previous page</span>
+              </Button>
+
+              {/* Page numbers */}
+              <div className="flex items-center">
+                {getPageNumbers().map((page, index) =>
+                  page === "ellipsis" ? (
+                    <div key={`ellipsis-${index}`} className="px-2">
+                      ...
+                    </div>
+                  ) : (
+                    <Button
+                      key={`page-${page}`}
+                      variant={filters.page === page ? "default" : "outline"}
+                      size="icon"
+                      className="w-8 h-8"
+                      onClick={() => handlePageChange(Number(page))}
+                    >
+                      {page}
+                    </Button>
+                  )
+                )}
+              </div>
+
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => handlePageChange(filters.page + 1)}
+                disabled={filters.page === totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+                <span className="sr-only">Next page</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Product</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this product? This action cannot be undone.
+              Are you sure you want to delete this product? This action cannot
+              be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button variant="destructive" onClick={confirmDeleteProduct}>
@@ -292,6 +482,5 @@ export default function ProductsPage() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
-

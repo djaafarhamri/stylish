@@ -28,8 +28,9 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
+      
       await login(email, password)
-      navigate("/")
+      if (isAuthenticated) navigate("/")
     } catch (error) {
       // Error is handled in the auth context
     } finally {

@@ -101,7 +101,7 @@ export default function CartPage() {
                       <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md">
                         <img
                           src={
-                            item.variant?.product?.imageUrl ||
+                            item.variant?.product?.mainImage.url ||
                             "/placeholder.svg"
                           }
                           alt={item.variant?.product?.name}

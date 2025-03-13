@@ -93,7 +93,7 @@ export default function OrderDetailsPage() {
                     <div className="h-20 w-20 bg-gray-100 rounded-md overflow-hidden">
                       <img
                         src={
-                          item.variant.product.imageUrl || "/placeholder.svg"
+                          item.variant.product.mainImage.url || "/placeholder.svg"
                         }
                         alt={item.variant.product.name}
                         width={80}
