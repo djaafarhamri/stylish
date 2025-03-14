@@ -50,7 +50,7 @@ export const ProductService = {
         ); // "images" should match your multer field name
       } else if (key === "mainImage") {
         // Append each image separately
-        (value instanceof File) && formData.append("mainImage", value);
+        value instanceof File && formData.append("mainImage", value);
         // "images" should match your multer field name
       } else if (key === "variants" && Array.isArray(value)) {
         // Convert variants array to JSON string
@@ -89,6 +89,14 @@ export const ProductService = {
   // Get a single product by ID
   async getProductById(id: string): Promise<ProductResponse> {
     const { data } = await apiClient.get(`/products/${id}`);
+    return data;
+  },
+
+  // Get a single product by ID
+  async deleteProduct(id: string): Promise<ProductResponse> {
+    const { data } = await apiClient.delete(`/products/${id}`, {
+      withCredentials: true,
+    });
     return data;
   },
 

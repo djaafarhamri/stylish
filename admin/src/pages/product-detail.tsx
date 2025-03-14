@@ -206,26 +206,31 @@ export default function ProductDetailPage() {
 
     try {
       // In a real app, you would make an API call to delete the product
-      // await fetch(`http://localhost:3001/api/products/${id}`, {
-      //   method: 'DELETE',
-      // });
+      const data = await ProductService.deleteProduct(id || "");
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // For demo purposes, we'll just update the state
+      if (data.status) {
+        toast({
+          title: "Product deleted",
+          description: "The product has been successfully deleted.",
+        });
 
-      toast({
-        title: "Product deleted",
-        description: `${form.watch("name")} has been deleted successfully.`,
-      });
-
-      navigate("/products");
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to delete the product. Please try again.",
+        });
+      }
     } catch (error) {
+      console.log(error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to delete the product. Please try again.",
       });
     } finally {
+      navigate("/products")
       setIsDeleteDialogOpen(false);
     }
   };
@@ -292,7 +297,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  if (id !== "new" && !form.watch("name")) {
+  if (id !== "new" && !form.watch("id")) {
     return (
       <div className="flex flex-col items-center justify-center h-full">
         <h2 className="text-2xl font-bold mb-2">Product Not Found</h2>

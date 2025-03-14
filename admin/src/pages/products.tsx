@@ -152,18 +152,28 @@ export default function ProductsPage() {
 
     try {
       // In a real app, you would make an API call to delete the product
-      // await fetch(`http://localhost:3001/api/products/${productToDelete}`, {
-      //   method: 'DELETE',
-      // });
+      const data = await ProductService.deleteProduct(productToDelete);
 
       // For demo purposes, we'll just update the state
-      setProducts(products.filter((product) => product.id !== productToDelete));
+      if (data.status) {
+        toast({
+          title: "Product deleted",
+          description: "The product has been successfully deleted.",
+        });
+        setProducts(
+          products.filter((product) => product.id !== productToDelete)
+        );
 
-      toast({
-        title: "Product deleted",
-        description: "The product has been successfully deleted.",
-      });
+        setProductToDelete(null);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to delete the product. Please try again.",
+        });
+      }
     } catch (error) {
+      console.log(error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -272,7 +282,10 @@ export default function ProductsPage() {
             </SelectContent>
           </Select>
 
-          <Select value={filters.status || "all"} onValueChange={handleStatusChange}>
+          <Select
+            value={filters.status || "all"}
+            onValueChange={handleStatusChange}
+          >
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
@@ -381,13 +394,15 @@ export default function ProductsPage() {
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link to={`/products/${product.id}/edit`}>
+                            <Link to={`/products/${product.id}`}>
                               <Edit className="h-4 w-4 mr-2" />
                               Edit
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => handleDeleteProduct(product.id || "")}
+                            onClick={() =>
+                              handleDeleteProduct(product.id || "")
+                            }
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash className="h-4 w-4 mr-2" />

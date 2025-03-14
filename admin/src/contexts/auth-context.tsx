@@ -32,11 +32,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Check if user is already logged in
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    const getUser = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("http://localhost:3001/api/users/me", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include"
+        });
+  
+        if (!response.ok) {
+          console.log("Invalid credentials");
+        }
+  
+        const data = await response.json();
+  
+        if (data.status) {
+          setUser(data.user);
+        }
+      } catch (error) {
+        
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
     }
-    setLoading(false);
+    getUser()
   }, []);
 
   const login = async (email: string, password: string) => {
