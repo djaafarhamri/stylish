@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-
+import heroImage from "../../assets/hero-image.jpg"
 import { Button } from "../ui/button";
 import { Link } from "react-router";
 
@@ -29,7 +29,7 @@ export default function Hero() {
         </div>
         <div className="relative h-[300px] w-full md:h-[400px] md:w-1/2 rounded-lg overflow-hidden">
           <img
-            src="/placeholder.svg?height=400&width=600"
+            src={heroImage}
             alt="Fashion model wearing the latest collection"
             className="h-full w-full object-cover"
           />
