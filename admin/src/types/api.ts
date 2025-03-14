@@ -151,6 +151,31 @@ export interface OrderResponse {
   message: string;
   order: Order;
 }
+export interface CustomersResponse {
+  status: boolean;
+  message: string;
+  customers: Customer[];
+}
+export interface CustomerResponse {
+  status: boolean;
+  message: string;
+  customer: Customer;
+}
+export interface Customer {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  lastOrderDate: Date;
+  isGuest: boolean;
+  orders: number;
+  totalSpent: number;
+  address: Address;
+  recentOrders: Order[];
+  joinDate: string;
+}
+
 export interface OrdersResponse {
   status: boolean;
   message: string;
