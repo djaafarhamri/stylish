@@ -11,11 +11,12 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
+    port: 3000, // Your Vite dev server port
     proxy: {
       "/api": {
-        target: "http://localhost:3001",
+        target: "https://stylish-skb8.onrender.com", // Your backend URL
         changeOrigin: true,
+        secure: true, // Ensures SSL/TLS is used (since your backend is HTTPS)
       },
     },
   },
