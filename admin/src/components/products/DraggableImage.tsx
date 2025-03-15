@@ -52,6 +52,7 @@ export default function DraggableImage({
       {isEditing && (
         <Button
           variant="destructive"
+          type="button"
           size="icon"
           className="absolute top-2 right-2 cursor-pointer"
           onClick={() => removeImage(index)}
