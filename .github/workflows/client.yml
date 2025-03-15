@@ -2,7 +2,7 @@ name: Deploy Client to Vercel
 
 on:
   push:
-    branches: [ main, master ]
+    branches: main
     paths:
       - 'client/**'
       - '.github/workflows/client.yml'
