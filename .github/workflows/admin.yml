@@ -3,6 +3,9 @@ name: Deploy Admin to Vercel
 on:
   push:
     branches: main
+    paths:
+      - 'admin/**'
+      - '.github/workflows/admin.yml'
 
 jobs:
   deploy:
@@ -23,7 +26,7 @@ jobs:
         run: npm install -g vercel
       
       - name: Deploy to Vercel
-        working-directory: ./admin
+        working-directory: admin
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
