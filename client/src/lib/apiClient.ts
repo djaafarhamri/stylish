@@ -2,7 +2,7 @@ import axios from "axios"
 
 // Create a base axios instance with common configuration
 const apiClient = axios.create({
-  baseURL: "http://localhost:3001/api",
+  baseURL: "https://stylish-skb8.onrender.com/api",
   headers: {
     "Content-Type": "application/json",
   },

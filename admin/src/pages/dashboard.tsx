@@ -48,7 +48,7 @@ export default function DashboardPage() {
     const fetchStats = async () => {
       try {
         // In a real app, you would fetch this data from your API
-        // const response = await fetch('http://localhost:3001/api/dashboard/stats');
+        // const response = await fetch('https://stylish-skb8.onrender.com/api/dashboard/stats');
         // const data = await response.json();
 
         // For demo purposes, we'll use mock data

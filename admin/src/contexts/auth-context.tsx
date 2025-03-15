@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const getUser = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:3001/api/users/me", {
+        const response = await fetch("https://stylish-skb8.onrender.com/api/users/me", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:3001/api/users/login", {
+      const response = await fetch("https://stylish-skb8.onrender.com/api/users/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
