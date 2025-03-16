@@ -180,6 +180,7 @@ export interface OrdersResponse {
   status: boolean;
   message: string;
   orders: Order[];
+  total: number;
 }
 
 export interface Address {

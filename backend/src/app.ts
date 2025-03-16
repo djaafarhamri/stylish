@@ -6,6 +6,7 @@ import categoryRoutes from "./routes/category-routes";
 import userRoutes from "./routes/user-routes";
 import cartRoutes from "./routes/cart-routes";
 import orderRoutes from "./routes/order-routes";
+import settingsRoutes from "./routes/settings-routes";
 import cookieParser from "cookie-parser";
 import path = require("path");
 
@@ -39,6 +40,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/settings", settingsRoutes);
 
 // Global error handler
 app.use(

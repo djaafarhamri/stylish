@@ -1,6 +1,19 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Search, Filter, MoreHorizontal, Eye, Download } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
+import {
+  Search,
+  MoreHorizontal,
+  Eye,
+  Download,
+  ChevronRight,
+  ChevronLeft,
+  ArrowLeft,
+} from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import {
@@ -23,17 +36,37 @@ import { OrderService } from "@/services/order-service";
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(
+    searchParams.get("search") || ""
+  );
+
+  const filters = useMemo(
+    () => ({
+      search: searchParams.get("search") || undefined,
+      status: searchParams.get("status") || "all",
+      sortBy:
+        (searchParams.get("sortBy") as "items" | "createdAt" | "total") ||
+        "createdAt",
+      page: searchParams.get("page")
+        ? Number.parseInt(searchParams.get("page") || "1", 10)
+        : 1,
+      limit: searchParams.get("limit")
+        ? Number.parseInt(searchParams.get("limit") || "10", 10)
+        : 10,
+      customerId: searchParams.get("customer") || undefined,
+    }),
+    [searchParams]
+  );
+
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    // Simulate API call to fetch orders
     const fetchOrders = async () => {
       try {
-        // In a real app, you would fetch this data from your API
-        const data = await OrderService.getOrders();
+        const data = await OrderService.getOrders(filters);
         setOrders(data.orders);
-        // For demo purposes, we'll use mock data
+        setTotal(data.total);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching orders:", error);
@@ -42,30 +75,80 @@ export default function OrdersPage() {
     };
 
     fetchOrders();
-  }, []);
+  }, [filters]);
 
-  // Filter orders based on search query and status filter
-  const filteredOrders = orders.filter((order) => {
-    const matchesSearch =
-      "ORD-" +
-        String(order.id)
-          .padStart(5, "0")
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase()) || order.isGuest
-        ? order.guestFirstName
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase())
-        : order.user?.firstName
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()) || order.isGuest
-        ? order.guestEmail?.toLowerCase().includes(searchQuery.toLowerCase())
-        : order.user?.email.toLowerCase().includes(searchQuery.toLowerCase());
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
-    const matchesStatus =
-      statusFilter === "all" || order.status === statusFilter;
+  const totalPages = Math.ceil(total / filters.limit);
 
-    return matchesSearch && matchesStatus;
-  });
+  const handlePageChange = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", page.toString());
+    navigate(`${pathname}?${params.toString()}`);
+  };
+
+  const handleSortChange = (sortBy: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("sortBy", sortBy);
+    navigate(`${pathname}?${params.toString()}`);
+  };
+
+  const handleLimitChange = (limit: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("limit", limit.toString());
+    params.set("page", "1");
+    navigate(`${pathname}?${params.toString()}`);
+  };
+
+  const handleStatusChange = (status: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("status", status);
+    params.set("page", "1");
+    navigate(`${pathname}?${params.toString()}`);
+  };
+  const handleSearchChange = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("search", searchQuery);
+    params.set("page", "1");
+    navigate(`${pathname}?${params.toString()}`);
+  };
+
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      // Show all pages if total pages are less than max visible
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      // Show first page, current and surrounding pages, and last page
+      const leftBoundary = Math.max(1, filters.page - 1);
+      const rightBoundary = Math.min(totalPages, filters.page + 1);
+
+      if (leftBoundary > 1) {
+        pageNumbers.push(1);
+        if (leftBoundary > 2) {
+          pageNumbers.push("ellipsis");
+        }
+      }
+
+      for (let i = leftBoundary; i <= rightBoundary; i++) {
+        pageNumbers.push(i);
+      }
+
+      if (rightBoundary < totalPages) {
+        if (rightBoundary < totalPages - 1) {
+          pageNumbers.push("ellipsis");
+        }
+        pageNumbers.push(totalPages);
+      }
+    }
+
+    return pageNumbers;
+  };
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -95,11 +178,29 @@ export default function OrdersPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Orders</h1>
-        <Button variant="outline">
-          <Download className="h-4 w-4 mr-2" />
-          Export
-        </Button>
+        <div className="flex gap-4">
+          {filters.customerId && (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={() => navigate("/orders")}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
+          <h1 className="text-3xl font-bold tracking-tight">
+            {filters.customerId &&
+              (orders[0]?.isGuest
+                ? orders[0]?.guestFirstName
+                : orders[0]?.user?.firstName) + "'s "}
+            Orders
+          </h1>
+        </div>
+          <Button variant="outline">
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
       </div>
 
       {/* Filters */}
@@ -113,12 +214,14 @@ export default function OrdersPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+        <Button onClick={handleSearchChange}>Search</Button>
         <div className="flex gap-2">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={filters.status} onValueChange={handleStatusChange}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="PENDING">Pending</SelectItem>
               <SelectItem value="PROCESSING">Processing</SelectItem>
               <SelectItem value="SHIPPED">Shipped</SelectItem>
@@ -126,10 +229,22 @@ export default function OrdersPage() {
               <SelectItem value="CANCELLED">Cancelled</SelectItem>
             </SelectContent>
           </Select>
-
-          <Button variant="outline" size="icon">
-            <Filter className="h-4 w-4" />
-          </Button>
+          <Select
+            value={filters.limit.toString()}
+            onValueChange={(value) => {
+              handleLimitChange(parseInt(value));
+            }}
+          >
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Per page" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5">5 per page</SelectItem>
+              <SelectItem value="10">10 per page</SelectItem>
+              <SelectItem value="20">20 per page</SelectItem>
+              <SelectItem value="50">50 per page</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -141,15 +256,30 @@ export default function OrdersPage() {
               <tr className="bg-muted/50">
                 <th className="text-left py-3 px-4 font-medium">Order ID</th>
                 <th className="text-left py-3 px-4 font-medium">Customer</th>
-                <th className="text-left py-3 px-4 font-medium">Date</th>
+                <th
+                  className="text-left py-3 px-4 font-medium"
+                  onClick={() => handleSortChange("createdAt")}
+                >
+                  Date
+                </th>
                 <th className="text-left py-3 px-4 font-medium">Status</th>
-                <th className="text-right py-3 px-4 font-medium">Items</th>
-                <th className="text-right py-3 px-4 font-medium">Total</th>
+                <th
+                  className="text-right py-3 px-4 font-medium"
+                  onClick={() => handleSortChange("items")}
+                >
+                  Items
+                </th>
+                <th
+                  className="text-right py-3 px-4 font-medium"
+                  onClick={() => handleSortChange("total")}
+                >
+                  Total
+                </th>
                 <th className="text-right py-3 px-4 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredOrders.length === 0 ? (
+              {orders.length === 0 ? (
                 <tr>
                   <td
                     colSpan={7}
@@ -159,7 +289,7 @@ export default function OrdersPage() {
                   </td>
                 </tr>
               ) : (
-                filteredOrders.map((order) => (
+                orders.map((order) => (
                   <tr key={order.id} className="border-t">
                     <td className="py-3 px-4 font-medium">
                       {"ORD-" + String(order.id).padStart(5, "0")}
@@ -237,6 +367,59 @@ export default function OrdersPage() {
           </table>
         </div>
       </div>
+      {/* Pagination */}
+      {orders.length > 0 && totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            Showing {orders.length} of {total} products
+          </div>
+          <div className="flex items-center space-x-2">
+            {/* Pagination controls */}
+            <div className="flex items-center space-x-1">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => handlePageChange(filters.page - 1)}
+                disabled={filters.page === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span className="sr-only">Previous page</span>
+              </Button>
+
+              {/* Page numbers */}
+              <div className="flex items-center">
+                {getPageNumbers().map((page, index) =>
+                  page === "ellipsis" ? (
+                    <div key={`ellipsis-${index}`} className="px-2">
+                      ...
+                    </div>
+                  ) : (
+                    <Button
+                      key={`page-${page}`}
+                      variant={filters.page === page ? "default" : "outline"}
+                      size="icon"
+                      className="w-8 h-8"
+                      onClick={() => handlePageChange(Number(page))}
+                    >
+                      {page}
+                    </Button>
+                  )
+                )}
+              </div>
+
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => handlePageChange(filters.page + 1)}
+                disabled={filters.page === totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+                <span className="sr-only">Next page</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

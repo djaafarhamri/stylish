@@ -1,39 +1,73 @@
 
-import type React from "react"
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
+import { Textarea } from "../components/ui/textarea";
+import { Switch } from "../components/ui/switch";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 
-import { useState } from "react"
-import { Button } from "../components/ui/button"
-import { Input } from "../components/ui/input"
-import { Label } from "../components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
-import { Textarea } from "../components/ui/textarea"
-import { Switch } from "../components/ui/switch"
-import { useToast } from "../components/ui/use-toast"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card"
+import StoreForm from "@/components/settings/StoreForm";
+
+
+
+// const seoFormSchema = z.object({
+//   title: z.string().min(2, { message: "Title is required" }),
+//   description: z.string().min(2, { message: "Description is required" }),
+//   keywords: z.string().min(2, { message: "Keywords is required" }),
+// });
+
+// const shippingFormSchema = z
+//   .object({
+//     free: z.boolean(),
+//     threshold: z.number().optional(), // Initially optional, required based on `free`
+//     express: z.boolean(),
+//     fee: z.number().optional(), // Initially optional, required based on `express`
+//   })
+//   .refine((data) => !(data.free && data.threshold === undefined), {
+//     message: "Threshold is required when free shipping is enabled",
+//     path: ["threshold"],
+//   })
+//   .refine((data) => !(data.express && data.fee === undefined), {
+//     message: "Fee is required when express shipping is enabled",
+//     path: ["fee"],
+//   });
+
+// const paymentFormSchema = z.object({
+//   credit: z.boolean(),
+//   paypal: z.boolean(),
+//   applepay: z.boolean(),
+//   googlepay: z.boolean(),
+// });
+
+// const notificationFormSchema = z.object({
+//   orderConfirmation: z.boolean(),
+//   shippingConfirmation: z.boolean(),
+//   orderCancellation: z.boolean(),
+//   abandonedCart: z.boolean(),
+// });
 
 export default function SettingsPage() {
-  const { toast } = useToast()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const handleSaveSettings = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false)
-      toast({
-        title: "Settings saved",
-        description: "Your settings have been saved successfully.",
-      })
-    }, 1000)
-  }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground mt-2">Manage your store settings and preferences.</p>
+        <p className="text-muted-foreground mt-2">
+          Manage your store settings and preferences.
+        </p>
       </div>
 
       <Tabs defaultValue="general">
@@ -45,60 +79,21 @@ export default function SettingsPage() {
         </TabsList>
 
         <TabsContent value="general" className="mt-6 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Store Information</CardTitle>
-              <CardDescription>Update your store details and contact information.</CardDescription>
-            </CardHeader>
-            <form onSubmit={handleSaveSettings}>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="store-name">Store Name</Label>
-                    <Input id="store-name" defaultValue="Fashion Store" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="store-email">Email Address</Label>
-                    <Input id="store-email" type="email" defaultValue="contact@fashionstore.com" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="store-phone">Phone Number</Label>
-                    <Input id="store-phone" defaultValue="+1 (555) 123-4567" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="store-currency">Currency</Label>
-                    <Input id="store-currency" defaultValue="USD ($)" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="store-address">Address</Label>
-                  <Textarea id="store-address" defaultValue="123 Fashion Street, New York, NY 10001, USA" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="store-description">Store Description</Label>
-                  <Textarea
-                    id="store-description"
-                    defaultValue="Your premier destination for trendy and high-quality clothing."
-                  />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Saving..." : "Save Changes"}
-                </Button>
-              </CardFooter>
-            </form>
-          </Card>
-
+          <StoreForm />
           <Card>
             <CardHeader>
               <CardTitle>SEO Settings</CardTitle>
-              <CardDescription>Optimize your store for search engines.</CardDescription>
+              <CardDescription>
+                Optimize your store for search engines.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="meta-title">Meta Title</Label>
-                <Input id="meta-title" defaultValue="Fashion Store | Trendy Clothing & Accessories" />
+                <Input
+                  id="meta-title"
+                  defaultValue="Fashion Store | Trendy Clothing & Accessories"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="meta-description">Meta Description</Label>
@@ -109,7 +104,10 @@ export default function SettingsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="meta-keywords">Meta Keywords</Label>
-                <Input id="meta-keywords" defaultValue="fashion, clothing, apparel, accessories, shoes" />
+                <Input
+                  id="meta-keywords"
+                  defaultValue="fashion, clothing, apparel, accessories, shoes"
+                />
               </div>
             </CardContent>
             <CardFooter>
@@ -122,31 +120,49 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Shipping Methods</CardTitle>
-              <CardDescription>Configure your store's shipping options.</CardDescription>
+              <CardDescription>
+                Configure your store's shipping options.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label className="text-base">Free Shipping</Label>
-                  <p className="text-sm text-muted-foreground">Offer free shipping for orders above a certain amount</p>
+                  <p className="text-sm text-muted-foreground">
+                    Offer free shipping for orders above a certain amount
+                  </p>
                 </div>
                 <Switch defaultChecked />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="free-shipping-threshold">Free Shipping Threshold ($)</Label>
-                <Input id="free-shipping-threshold" type="number" defaultValue="50" />
+                <Label htmlFor="free-shipping-threshold">
+                  Free Shipping Threshold ($)
+                </Label>
+                <Input
+                  id="free-shipping-threshold"
+                  type="number"
+                  defaultValue="50"
+                />
               </div>
 
               <div className="flex items-center justify-between pt-4">
                 <div className="space-y-0.5">
                   <Label className="text-base">Express Shipping</Label>
-                  <p className="text-sm text-muted-foreground">Offer express shipping option to customers</p>
+                  <p className="text-sm text-muted-foreground">
+                    Offer express shipping option to customers
+                  </p>
                 </div>
                 <Switch defaultChecked />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="express-shipping-fee">Express Shipping Fee ($)</Label>
-                <Input id="express-shipping-fee" type="number" defaultValue="15" />
+                <Label htmlFor="express-shipping-fee">
+                  Express Shipping Fee ($)
+                </Label>
+                <Input
+                  id="express-shipping-fee"
+                  type="number"
+                  defaultValue="15"
+                />
               </div>
             </CardContent>
             <CardFooter>
@@ -159,13 +175,17 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Payment Methods</CardTitle>
-              <CardDescription>Configure your store's payment options.</CardDescription>
+              <CardDescription>
+                Configure your store's payment options.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label className="text-base">Credit Card</Label>
-                  <p className="text-sm text-muted-foreground">Accept credit card payments</p>
+                  <p className="text-sm text-muted-foreground">
+                    Accept credit card payments
+                  </p>
                 </div>
                 <Switch defaultChecked />
               </div>
@@ -173,7 +193,9 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between pt-4">
                 <div className="space-y-0.5">
                   <Label className="text-base">PayPal</Label>
-                  <p className="text-sm text-muted-foreground">Accept PayPal payments</p>
+                  <p className="text-sm text-muted-foreground">
+                    Accept PayPal payments
+                  </p>
                 </div>
                 <Switch defaultChecked />
               </div>
@@ -181,7 +203,9 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between pt-4">
                 <div className="space-y-0.5">
                   <Label className="text-base">Apple Pay</Label>
-                  <p className="text-sm text-muted-foreground">Accept Apple Pay payments</p>
+                  <p className="text-sm text-muted-foreground">
+                    Accept Apple Pay payments
+                  </p>
                 </div>
                 <Switch />
               </div>
@@ -189,7 +213,9 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between pt-4">
                 <div className="space-y-0.5">
                   <Label className="text-base">Google Pay</Label>
-                  <p className="text-sm text-muted-foreground">Accept Google Pay payments</p>
+                  <p className="text-sm text-muted-foreground">
+                    Accept Google Pay payments
+                  </p>
                 </div>
                 <Switch />
               </div>
@@ -204,13 +230,17 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Email Notifications</CardTitle>
-              <CardDescription>Configure your store's email notification settings.</CardDescription>
+              <CardDescription>
+                Configure your store's email notification settings.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label className="text-base">Order Confirmation</Label>
-                  <p className="text-sm text-muted-foreground">Send email when an order is placed</p>
+                  <p className="text-sm text-muted-foreground">
+                    Send email when an order is placed
+                  </p>
                 </div>
                 <Switch defaultChecked />
               </div>
@@ -218,7 +248,9 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between pt-4">
                 <div className="space-y-0.5">
                   <Label className="text-base">Shipping Confirmation</Label>
-                  <p className="text-sm text-muted-foreground">Send email when an order is shipped</p>
+                  <p className="text-sm text-muted-foreground">
+                    Send email when an order is shipped
+                  </p>
                 </div>
                 <Switch defaultChecked />
               </div>
@@ -226,7 +258,9 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between pt-4">
                 <div className="space-y-0.5">
                   <Label className="text-base">Order Cancellation</Label>
-                  <p className="text-sm text-muted-foreground">Send email when an order is cancelled</p>
+                  <p className="text-sm text-muted-foreground">
+                    Send email when an order is cancelled
+                  </p>
                 </div>
                 <Switch defaultChecked />
               </div>
@@ -234,7 +268,9 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between pt-4">
                 <div className="space-y-0.5">
                   <Label className="text-base">Abandoned Cart</Label>
-                  <p className="text-sm text-muted-foreground">Send email for abandoned carts</p>
+                  <p className="text-sm text-muted-foreground">
+                    Send email for abandoned carts
+                  </p>
                 </div>
                 <Switch defaultChecked />
               </div>
@@ -246,6 +282,5 @@ export default function SettingsPage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
-

@@ -163,8 +163,42 @@ export const createGuestOrder = async (req: Request, res: Response) => {
  * @access Private (Customer)
  */
 export const getOrders = async (req: Request, res: Response) => {
+  const { search, status = "all", sortBy = "createdAt", page = 1, limit = 10, customerId } = req.query;
+
   try {
+    // Convert page and limit to numbers
+    const pageNumber = Number(page) || 1;
+    const limitNumber = Number(limit) || 10;
+    const skip = (pageNumber - 1) * limitNumber;
+
+    // Construct the where clause dynamically
+    const where: any = {};
+
+    if (customerId) {
+      if ((customerId as string).split("-")[0] !== "guest") {
+        where.userId = customerId
+      } else {
+        where.id = parseInt((customerId as string).split("-")[1])
+      }
+    }
+
+    if (status !== "all") {
+      where.status = status;
+    }
+
+    if (search) {
+      where.OR = [
+        { user: { firstName: { contains: search, mode: "insensitive" } } }, // Search by user name
+        { user: { lastName: { contains: search, mode: "insensitive" } } }, // Search by user name
+        { items: { some: { variant: { product: { name: { contains: search, mode: "insensitive" } } } } } }, // Search by product name
+        { guestFirstName: { contains: search, mode: "insensitive" } }, // Search by user name
+        { guestLastName: { contains: search, mode: "insensitive" } }, // Search by user name
+      ];
+    }
+
+    // Fetch orders with filtering, sorting, and pagination
     const orders = await prisma.order.findMany({
+      where,
       include: {
         items: {
           include: {
@@ -184,11 +218,13 @@ export const getOrders = async (req: Request, res: Response) => {
         shippingAddress: true,
         user: true,
       },
+      orderBy: { [sortBy as string]: "desc" },
+      skip,
+      take: limitNumber,
     });
+    const totalCount = await prisma.order.count({ where });
 
-    res
-      .status(200)
-      .json({ status: true, message: "Order created successfully", orders });
+    res.status(200).json({ status: true, message: "Orders retrieved successfully", orders, total: totalCount });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Could not retrieve orders", error });
@@ -434,7 +470,7 @@ export const getCustomerById = async (req: Request, res: Response) => {
         where: { id: Number(id.split("-")[1]), isGuest: true }, // Convert id to Number for guests
         include: {
           shippingAddress: true,
-          items: true
+          items: true,
         },
       });
 

@@ -1,10 +1,26 @@
 import apiClient from "../lib/apiClient";
-import type { CustomerResponse, CustomersResponse, Order, OrderResponse, OrdersResponse } from "../types/api";
+import type {
+  CustomerResponse,
+  CustomersResponse,
+  Order,
+  OrderResponse,
+  OrdersResponse,
+} from "../types/api";
 
 export const OrderService = {
   // Get user orders
-  async getOrders(): Promise<OrdersResponse> {
-    const { data } = await apiClient.get("/orders", { withCredentials: true });
+  async getOrders(filters: {
+    search?: string;
+    status: string;
+    sortBy: "createdAt" | "items" | "total";
+    page: number;
+    limit: number;
+    customerId?: string;
+  }): Promise<OrdersResponse> {
+    const { data } = await apiClient.get("/orders", {
+      params: filters,
+      withCredentials: true,
+    });
     return data;
   },
 
@@ -55,10 +71,12 @@ export const OrderService = {
     return data;
   },
   // Create guest order
-  async updateOrderStatus(
-    status: string, id: string
-  ): Promise<OrderResponse> {
-    const { data } = await apiClient.patch(`/orders/${id}/status`, {status}, {withCredentials: true});
+  async updateOrderStatus(status: string, id: string): Promise<OrderResponse> {
+    const { data } = await apiClient.patch(
+      `/orders/${id}/status`,
+      { status },
+      { withCredentials: true }
+    );
     return data;
   },
 };

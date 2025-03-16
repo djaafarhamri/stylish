@@ -157,6 +157,46 @@ model CartItem {
   quantity  Int
 }
 
+model Store {
+  id          String @id @default(uuid())
+  name        String
+  email       String
+  phone       String
+  currency    String
+  address     String
+  description String
+}
+
+model SEO {
+  id String @id @default(uuid())
+  title String
+  description String
+  keywords String @db.VarChar()
+}
+
+model shipping {
+  id String @id @default(uuid())
+  free Boolean
+  threshold Int
+  express Boolean
+  fee Int
+}
+
+model Payment {
+  id String @id @default(uuid())
+  credit Boolean
+  paypal Boolean
+  applepay Boolean
+  googlepay Boolean
+}
+model Notifications {
+  id String @id @default(uuid())
+  orderConfirmation Boolean
+  shippingConfirmation Boolean
+  orderCancellation Boolean
+  abandonedCart Boolean
+}
+
 enum UserRole {
   CUSTOMER
   ADMIN

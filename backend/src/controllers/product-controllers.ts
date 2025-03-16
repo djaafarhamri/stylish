@@ -14,7 +14,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
       search,
       sortBy = "createdAt",
       sortOrder = "desc",
-      status = "active",
+      status = "all",
       page = 1,
       limit = 10,
       sizes,
