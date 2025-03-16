@@ -153,12 +153,8 @@ export default function ProductDetailPage() {
     setIsLoading(false);
   }, [id]);
 
-  useEffect(() => {
-    console.log(form.getValues());
-  }, [form]);
 
   const handleSaveProduct = async (data: z.infer<typeof productFormSchema>) => {
-    console.log(data);
 
     setIsSaving(true);
 
@@ -205,10 +201,8 @@ export default function ProductDetailPage() {
     if (id === "new") return;
 
     try {
-      // In a real app, you would make an API call to delete the product
       const data = await ProductService.deleteProduct(id || "");
 
-      // For demo purposes, we'll just update the state
       if (data.status) {
         toast({
           title: "Product deleted",

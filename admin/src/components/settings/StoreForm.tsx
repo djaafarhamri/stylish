@@ -40,7 +40,15 @@ export default function StoreForm() {
 
   const form = useForm<z.infer<typeof storeFormSchema>>({
     resolver: zodResolver(storeFormSchema),
-    defaultValues: {},
+    defaultValues: {
+      id: "",
+      name: "",
+      description: "",
+      email: "",
+      phone: "",
+      currency: "",
+      address: "",
+    },
   });
 
   const handleSaveSettings = async (data: z.infer<typeof storeFormSchema>) => {
@@ -118,68 +126,67 @@ export default function StoreForm() {
         >
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Store Name</FormLabel>
-                      <FormControl>
-                        <div className="space-y-2">
-                          <Input placeholder="name" {...field} />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Address</FormLabel>
-                      <FormControl>
-                        <div className="space-y-2">
-                          <Input placeholder="email" type="email" {...field} />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone Number</FormLabel>
-                      <FormControl>
-                        <div className="space-y-2">
-                          <Input placeholder="phone" {...field} />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="currency"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Currency</FormLabel>
-                      <FormControl>
-                        <div className="space-y-2">
-                          <Input placeholder="currency" {...field} />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Store Name</FormLabel>
+                    <FormControl>
+                      <div className="space-y-2">
+                        <Input placeholder="name" {...field} />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email Address</FormLabel>
+                    <FormControl>
+                      <div className="space-y-2">
+                        <Input placeholder="email" type="email" {...field} />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number</FormLabel>
+                    <FormControl>
+                      <div className="space-y-2">
+                        <Input placeholder="phone" {...field} />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="currency"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Currency</FormLabel>
+                    <FormControl>
+                      <div className="space-y-2">
+                        <Input placeholder="currency" {...field} />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-            <div className="space-y-2">
               <FormField
                 control={form.control}
                 name="address"
@@ -195,8 +202,6 @@ export default function StoreForm() {
                   </FormItem>
                 )}
               />
-            </div>
-            <div className="space-y-2">
               <FormField
                 control={form.control}
                 name="description"
@@ -212,7 +217,7 @@ export default function StoreForm() {
                   </FormItem>
                 )}
               />
-            </div>
+            
           </CardContent>
           <CardFooter>
             <Button type="submit" disabled={isSubmitting}>

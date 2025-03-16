@@ -47,7 +47,13 @@ export default function ShippingForm() {
 
   const form = useForm<z.infer<typeof shippingFormSchema>>({
     resolver: zodResolver(shippingFormSchema),
-    defaultValues: {},
+    defaultValues: {
+      id: "",
+      threshold: 0,
+      express: false,
+      free: false,
+      fee: 0,
+    },
   });
 
   const handleSaveSettings = async (
@@ -132,15 +138,17 @@ export default function ShippingForm() {
                 <FormItem>
                   <FormLabel>Free Shipping</FormLabel>
                   <FormControl>
-                    <div className="space-y-0.5">
-                      <p className="text-sm text-muted-foreground">
-                        Offer free shipping for orders above a certain amount
-                      </p>
+                    <div>
+                      <div className="space-y-0.5">
+                        <p className="text-sm text-muted-foreground">
+                          Offer free shipping for orders above a certain amount
+                        </p>
+                      </div>
+                      <Switch
+                        checked={field.value ?? false}
+                        onCheckedChange={field.onChange}
+                      />
                     </div>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -154,7 +162,12 @@ export default function ShippingForm() {
                   <FormLabel>Free Shipping Threshold ($)</FormLabel>
                   <FormControl>
                     <div className="space-y-2">
-                      <Input placeholder="50" type="number" {...field} />
+                      <Input
+                        placeholder="50"
+                        type="number"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                      />
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -168,15 +181,17 @@ export default function ShippingForm() {
                 <FormItem>
                   <FormLabel>Express Shipping</FormLabel>
                   <FormControl>
-                    <div className="space-y-0.5">
-                      <p className="text-sm text-muted-foreground">
-                        Offer express shipping option to customers
-                      </p>
+                    <div>
+                      <div className="space-y-0.5">
+                        <p className="text-sm text-muted-foreground">
+                          Offer express shipping option to customers
+                        </p>
+                      </div>
+                      <Switch
+                        checked={field.value ?? false}
+                        onCheckedChange={field.onChange}
+                      />
                     </div>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -190,7 +205,12 @@ export default function ShippingForm() {
                   <FormLabel>Express Shipping Fee ($)</FormLabel>
                   <FormControl>
                     <div className="space-y-2">
-                      <Input placeholder="10" type="number" {...field} />
+                      <Input
+                        placeholder="10"
+                        type="number"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                      />
                     </div>
                   </FormControl>
                   <FormMessage />

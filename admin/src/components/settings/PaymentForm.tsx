@@ -37,7 +37,13 @@ export default function PaymentForm() {
 
   const form = useForm<z.infer<typeof paymentFormSchema>>({
     resolver: zodResolver(paymentFormSchema),
-    defaultValues: {},
+    defaultValues: {
+      id: "",
+      credit: true,
+      paypal: true,
+      googlepay: false,
+      applepay: false,
+    },
   });
 
   const handleSaveSettings = async (
@@ -129,7 +135,7 @@ export default function PaymentForm() {
                         </p>
                       </div>
                       <Switch
-                        checked={field.value}
+                        checked={field.value ?? false}
                         onCheckedChange={field.onChange}
                       />
                     </div>
@@ -152,7 +158,7 @@ export default function PaymentForm() {
                         </p>
                       </div>
                       <Switch
-                        checked={field.value}
+                        checked={field.value ?? false}
                         onCheckedChange={field.onChange}
                       />
                     </div>
@@ -174,11 +180,11 @@ export default function PaymentForm() {
                           Accept Google Pay Payments
                         </p>
                       </div>
+                      <Switch
+                        checked={field.value ?? false}
+                        onCheckedChange={field.onChange}
+                      />
                     </div>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -197,11 +203,11 @@ export default function PaymentForm() {
                           Accept Apple Pay Payments
                         </p>
                       </div>
+                      <Switch
+                        checked={field.value ?? false}
+                        onCheckedChange={field.onChange}
+                      />
                     </div>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

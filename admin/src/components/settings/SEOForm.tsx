@@ -37,7 +37,12 @@ export default function SEOForm() {
 
   const form = useForm<z.infer<typeof seoFormSchema>>({
     resolver: zodResolver(seoFormSchema),
-    defaultValues: {},
+    defaultValues: {
+      id: "",
+      title: "",
+      description: "",
+      keywords: "",
+    },
   });
 
   const handleSaveSettings = async (data: z.infer<typeof seoFormSchema>) => {
@@ -109,52 +114,52 @@ export default function SEOForm() {
         >
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Meta Title</FormLabel>
-                      <FormControl>
-                        <div className="space-y-2">
-                          <Input placeholder="meta title" {...field} />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Meta Description</FormLabel>
-                      <FormControl>
-                        <div className="space-y-2">
-                          <Textarea placeholder="meta description" {...field} />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="keywords"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Meta Keywords</FormLabel>
-                      <FormControl>
-                        <div className="space-y-2">
-                          <Input placeholder="meta keywords" {...field} />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Meta Title</FormLabel>
+                    <FormControl>
+                      <div className="space-y-2">
+                        <Input placeholder="meta title" {...field} />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Meta Description</FormLabel>
+                    <FormControl>
+                      <div className="space-y-2">
+                        <Textarea placeholder="meta description" {...field} />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="keywords"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Meta Keywords</FormLabel>
+                    <FormControl>
+                      <div className="space-y-2">
+                        <Input placeholder="meta keywords" {...field} />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </CardContent>
           <CardFooter>
             <Button type="submit" disabled={isSubmitting}>

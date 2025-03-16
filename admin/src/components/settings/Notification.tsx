@@ -37,7 +37,13 @@ export default function NotificationForm() {
 
   const form = useForm<z.infer<typeof notificationFormSchema>>({
     resolver: zodResolver(notificationFormSchema),
-    defaultValues: {},
+    defaultValues: {
+      id: '',
+      orderConfirmation: true,
+      shippingConfirmation: true,
+      orderCancellation: true,
+      abandonedCart: false,
+    },
   });
 
   const handleSaveSettings = async (
@@ -58,10 +64,10 @@ export default function NotificationForm() {
 
     const newData = await res.json();
     form.setValue("id", newData.id);
-    form.setValue("orderConfirmation", newData.credit);
-    form.setValue("shippingConfirmation", newData.paypal);
-    form.setValue("orderCancellation", newData.googlepay);
-    form.setValue("abandonedCart", newData.applepay);
+    form.setValue("orderConfirmation", newData.orderConfirmation);
+    form.setValue("shippingConfirmation", newData.shippingConfirmation);
+    form.setValue("orderCancellation", newData.orderCancellation);
+    form.setValue("abandonedCart", newData.abandonedCart);
 
     setIsSubmitting(false);
     toast({
@@ -85,10 +91,10 @@ export default function NotificationForm() {
         );
         const data = await res.json();
         form.setValue("id", data.id);
-        form.setValue("orderConfirmation", data.credit);
-        form.setValue("shippingConfirmation", data.paypal);
-        form.setValue("orderCancellation", data.googlepay);
-        form.setValue("abandonedCart", data.applepay);
+        form.setValue("orderConfirmation", data.orderConfirmation);
+        form.setValue("shippingConfirmation", data.shippingConfirmation);
+        form.setValue("orderCancellation", data.orderCancellation);
+        form.setValue("abandonedCart", data.abandonedCart);
         setIsSubmitting(false);
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -129,7 +135,7 @@ export default function NotificationForm() {
                         </p>
                       </div>
                       <Switch
-                        checked={field.value}
+                        checked={field.value ?? false}
                         onCheckedChange={field.onChange}
                       />
                     </div>
@@ -152,7 +158,7 @@ export default function NotificationForm() {
                         </p>
                       </div>
                       <Switch
-                        checked={field.value}
+                        checked={field.value ?? false}
                         onCheckedChange={field.onChange}
                       />
                     </div>
@@ -174,11 +180,11 @@ export default function NotificationForm() {
                           Send email when an order is cancelled
                         </p>
                       </div>
+                      <Switch
+                        checked={field.value ?? false}
+                        onCheckedChange={field.onChange}
+                      />
                     </div>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -197,11 +203,11 @@ export default function NotificationForm() {
                           Send email for abandoned carts
                         </p>
                       </div>
+                      <Switch
+                        checked={field.value ?? false}
+                        onCheckedChange={field.onChange}
+                      />
                     </div>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
