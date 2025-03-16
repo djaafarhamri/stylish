@@ -118,7 +118,6 @@ export default function StoreForm() {
         >
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
                 <FormField
                   control={form.control}
                   name="name"
@@ -134,8 +133,6 @@ export default function StoreForm() {
                     </FormItem>
                   )}
                 />
-              </div>
-              <div className="space-y-2">
                 <FormField
                   control={form.control}
                   name="email"
@@ -151,8 +148,6 @@ export default function StoreForm() {
                     </FormItem>
                   )}
                 />
-              </div>
-              <div className="space-y-2">
                 <FormField
                   control={form.control}
                   name="phone"
@@ -168,8 +163,6 @@ export default function StoreForm() {
                     </FormItem>
                   )}
                 />
-              </div>
-              <div className="space-y-2">
                 <FormField
                   control={form.control}
                   name="currency"
@@ -185,7 +178,6 @@ export default function StoreForm() {
                     </FormItem>
                   )}
                 />
-              </div>
             </div>
             <div className="space-y-2">
               <FormField
