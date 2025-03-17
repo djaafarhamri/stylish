@@ -6,7 +6,8 @@ import {
     updateProduct, 
     deleteProduct, 
     getFeaturedProducts,
-    getFilters
+    getFilters,
+    getTopProducts
 } from "../controllers/product-controllers";
 import { requireAdmin, requireAuth } from "../middlewares/auth-middleware";
 import upload from "../middlewares/upload";
@@ -14,6 +15,7 @@ import upload from "../middlewares/upload";
 const router = express.Router();
 
 router.get("/", getAllProducts);
+router.get("/top", requireAuth, requireAdmin, getTopProducts);
 router.get("/featured", getFeaturedProducts);
 router.get("/filters", getFilters);
 router.get("/:id", getProductById);

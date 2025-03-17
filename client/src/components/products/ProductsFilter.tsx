@@ -8,13 +8,24 @@ import { ProductService } from "../../services/product-service";
 interface ProductsFilterProps {
   initialFilters: ProductFilters;
   hidden: boolean;
-  closeFilters: () => void
+  closeFilters: () => void;
 }
+
+const categories = [
+  "Dresses",
+  "Shirts",
+  "Pants",
+  "Jackets",
+  "Accessories",
+  "Shoes",
+  "Sportswear",
+  "Formal Wear",
+];
 
 export default function ProductsFilter({
   initialFilters,
   hidden,
-  closeFilters
+  closeFilters,
 }: ProductsFilterProps) {
   const [minPrice, setMinPrice] = useState(
     initialFilters.minPrice?.toString() || ""
@@ -112,7 +123,7 @@ export default function ProductsFilter({
 
     // Navigate to the same page but with updated search params
     navigate(`${pathname}?${params.toString()}`);
-    closeFilters()
+    closeFilters();
   };
 
   const setCategory = (category: string | null) => {
@@ -133,8 +144,7 @@ export default function ProductsFilter({
   };
 
   return (
-    <div className={`${hidden ? "hidden md:block":"block"} space-y-6`}>
-
+    <div className={`${hidden ? "hidden md:block" : "block"} space-y-6`}>
       <div>
         <h3 className="mb-4 text-lg font-semibold">Categories</h3>
         <div className="space-y-2">
@@ -143,7 +153,7 @@ export default function ProductsFilter({
             onClick={(e) => {
               e.preventDefault();
               setCategory(null);
-              closeFilters()
+              closeFilters();
             }}
             className={`block ${
               isActiveCategory(null)
@@ -153,51 +163,24 @@ export default function ProductsFilter({
           >
             All Products
           </Link>
-          <Link
-            to="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setCategory("Men");
-              closeFilters()
-            }}
-            className={`block ${
-              isActiveCategory("Men")
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Men
-          </Link>
-          <Link
-            to="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setCategory("Women");
-              closeFilters()
-            }}
-            className={`block ${
-              isActiveCategory("women")
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Women
-          </Link>
-          <Link
-            to="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setCategory("Accessories");
-              closeFilters()
-            }}
-            className={`block ${
-              isActiveCategory("Accessories")
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Accessories
-          </Link>
+          {categories.map((c, i) => (
+            <Link
+              key={i}
+              to="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setCategory(c);
+                closeFilters();
+              }}
+              className={`block ${
+                isActiveCategory(c)
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {c}
+            </Link>
+          ))}
         </div>
       </div>
 

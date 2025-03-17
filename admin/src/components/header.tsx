@@ -18,7 +18,7 @@ export default function Header({ onMenuButtonClick }: HeaderProps) {
       </Button>
 
       <div className="hidden md:block">
-        <h1 className="text-xl font-semibold">Fashion Store Admin</h1>
+        <h1 className="text-xl font-semibold">Stylish Admin</h1>
       </div>
 
       <div className="flex items-center space-x-2">

@@ -38,17 +38,17 @@ export default function Home() {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/categories/men" className="text-sm text-muted-foreground hover:text-foreground">
-                    Men
+                  <Link to="/product?category=Dresses&page=1" className="text-sm text-muted-foreground hover:text-foreground">
+                    Dresses
                   </Link>
                 </li>
                 <li>
-                  <Link to="/categories/women" className="text-sm text-muted-foreground hover:text-foreground">
-                    Women
+                  <Link to="/products?category=Sportswear&page=1" className="text-sm text-muted-foreground hover:text-foreground">
+                    Sportswear
                   </Link>
                 </li>
                 <li>
-                  <Link to="/categories/accessories" className="text-sm text-muted-foreground hover:text-foreground">
+                  <Link to="/products?category=Accessories&page=1" className="text-sm text-muted-foreground hover:text-foreground">
                     Accessories
                   </Link>
                 </li>

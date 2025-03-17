@@ -64,6 +64,12 @@ export interface ProductsResponse {
   total: number;
 }
 
+export interface TopProductsResponse {
+  name: string;
+  sales: number;
+  revenue: number;
+}
+
 export interface FiltersResponse {
   colors: Color[];
   status: string;
@@ -160,6 +166,22 @@ export interface CustomerResponse {
   status: boolean;
   message: string;
   customer: Customer;
+}
+export interface ChartsResponse {
+  revenueData: { name: string; value: number }[];
+  ordersData: { name: string; value: number }[];
+}
+export interface StatsResponse {
+  totalRevenue: number;
+  totalOrders: number;
+  totalProducts: number;
+  totalCustomers: number;
+  trends: {
+    totalRevenue: { trend: "up" | "down"; trendValue: number };
+    totalOrders: { trend: "up" | "down"; trendValue: number };
+    totalProducts: { trend: "up" | "down"; trendValue: number };
+    totalCustomers: { trend: "up" | "down"; trendValue: number };
+  };
 }
 export interface Customer {
   id: string;

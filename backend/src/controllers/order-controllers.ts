@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { CartItem, Order, PrismaClient } from "@prisma/client";
+import { CartItem, PrismaClient } from "@prisma/client";
+import { subMonths } from "date-fns";
 
 const prisma = new PrismaClient();
 
@@ -163,7 +164,14 @@ export const createGuestOrder = async (req: Request, res: Response) => {
  * @access Private (Customer)
  */
 export const getOrders = async (req: Request, res: Response) => {
-  const { search, status = "all", sortBy = "createdAt", page = 1, limit = 10, customerId } = req.query;
+  const {
+    search,
+    status = "all",
+    sortBy = "createdAt",
+    page = 1,
+    limit = 10,
+    customerId,
+  } = req.query;
 
   try {
     // Convert page and limit to numbers
@@ -176,9 +184,9 @@ export const getOrders = async (req: Request, res: Response) => {
 
     if (customerId) {
       if ((customerId as string).split("-")[0] !== "guest") {
-        where.userId = customerId
+        where.userId = customerId;
       } else {
-        where.id = parseInt((customerId as string).split("-")[1])
+        where.id = parseInt((customerId as string).split("-")[1]);
       }
     }
 
@@ -190,7 +198,15 @@ export const getOrders = async (req: Request, res: Response) => {
       where.OR = [
         { user: { firstName: { contains: search, mode: "insensitive" } } }, // Search by user name
         { user: { lastName: { contains: search, mode: "insensitive" } } }, // Search by user name
-        { items: { some: { variant: { product: { name: { contains: search, mode: "insensitive" } } } } } }, // Search by product name
+        {
+          items: {
+            some: {
+              variant: {
+                product: { name: { contains: search, mode: "insensitive" } },
+              },
+            },
+          },
+        }, // Search by product name
         { guestFirstName: { contains: search, mode: "insensitive" } }, // Search by user name
         { guestLastName: { contains: search, mode: "insensitive" } }, // Search by user name
       ];
@@ -224,7 +240,14 @@ export const getOrders = async (req: Request, res: Response) => {
     });
     const totalCount = await prisma.order.count({ where });
 
-    res.status(200).json({ status: true, message: "Orders retrieved successfully", orders, total: totalCount });
+    res
+      .status(200)
+      .json({
+        status: true,
+        message: "Orders retrieved successfully",
+        orders,
+        total: totalCount,
+      });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Could not retrieve orders", error });
@@ -330,6 +353,9 @@ export const getOrderById = async (req: Request, res: Response) => {
 export const getCustomers = async (req: Request, res: Response) => {
   try {
     const users = await prisma.user.findMany({
+      where: {
+        role: "CUSTOMER"
+      },
       include: {
         orders: {
           include: {
@@ -549,5 +575,130 @@ export const deleteOrder = async (req: Request, res: Response) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Could not delete order", error });
+  }
+};
+
+/**
+ * @desc Get dashboard stats
+ * @route GET /api/orders/stats
+ * @access Private (Admin)
+ */
+export const getStats = async (req: Request, res: Response) => {
+  try {
+    // Get date ranges for comparisons
+    const lastMonth = subMonths(new Date(), 1);
+    // Calculate current stats
+    const currentRevenue = await prisma.order.aggregate({
+      _sum: { total: true },
+      where: { status: "DELIVERED" },
+    });
+
+    const currentOrders = await prisma.order.count();
+    const currentProducts = await prisma.product.count();
+    const currentCustomers = await prisma.user.count({
+      where: { orders: { some: {} } },
+    });
+
+    // Calculate past stats (last month or last week)
+    const pastRevenue = await prisma.order.aggregate({
+      _sum: { total: true },
+      where: { status: "DELIVERED", createdAt: { lt: lastMonth } },
+    });
+
+    const pastOrders = await prisma.order.count({
+      where: { createdAt: { lt: lastMonth } },
+    });
+
+    const pastProducts = await prisma.product.count({
+      where: { createdAt: { lt: lastMonth } },
+    });
+
+    const pastCustomers = await prisma.user.count({
+      where: { orders: { some: {} }, createdAt: { lt: lastMonth } },
+    });
+
+    // Helper function to calculate trend
+    const calculateTrend = (current: number, past: number) => {
+      if (past === 0) return { trend: "up", trendValue: 100 }; // Avoid division by zero
+      const trendValue = ((current - past) / past) * 100;
+      return {
+        trend: trendValue >= 0 ? "up" : "down",
+        trendValue: Math.abs(trendValue),
+      };
+    };
+
+    // Compute trends
+    const revenueTrend = calculateTrend(
+      currentRevenue._sum.total?.toNumber() || 0,
+      pastRevenue._sum.total?.toNumber() || 0
+    );
+    const ordersTrend = calculateTrend(currentOrders, pastOrders);
+    const productsTrend = calculateTrend(currentProducts, pastProducts);
+    const customersTrend = calculateTrend(currentCustomers, pastCustomers);
+
+    // Send response
+    res.json({
+      totalRevenue: currentRevenue._sum.total?.toNumber() || 0,
+      totalOrders: currentOrders,
+      totalProducts: currentProducts,
+      totalCustomers: currentCustomers,
+      trends: {
+        totalRevenue: revenueTrend,
+        totalOrders: ordersTrend,
+        totalProducts: productsTrend,
+        totalCustomers: customersTrend,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching stats:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getCharts = async (req: Request, res: Response) => {
+  try {
+    const last7Months = subMonths(new Date(), 6); // Get last 7 months including current
+
+    // Fetch revenue data grouped by month
+    const revenueData = await prisma.$queryRaw<
+      { month: string; revenue: number }[]
+    >`
+      SELECT 
+        TO_CHAR(DATE_TRUNC('month', "createdAt"), 'Mon') AS month,
+        COALESCE(SUM("total")::numeric, 0) AS revenue
+      FROM "Order"
+      WHERE "createdAt" >= ${last7Months} AND status = 'DELIVERED'
+      GROUP BY DATE_TRUNC('month', "createdAt")
+      ORDER BY DATE_TRUNC('month', "createdAt");
+    `;
+
+    // Fetch order count data grouped by month
+    const ordersData = await prisma.$queryRaw<
+      { month: string; order_count: number }[]
+    >`
+      SELECT 
+        TO_CHAR(DATE_TRUNC('month', "createdAt"), 'Mon') AS month,
+        COUNT(*) AS order_count
+      FROM "Order"
+      WHERE "createdAt" >= ${last7Months}
+      GROUP BY DATE_TRUNC('month', "createdAt")
+      ORDER BY DATE_TRUNC('month', "createdAt");
+    `;
+
+    // Format data to match frontend
+    const formattedRevenue = revenueData.map((r) => ({
+      name: r.month, // "Jan", "Feb", etc.
+      value: Number(r.revenue), // Convert Decimal to number
+    }));
+
+    const formattedOrders = ordersData.map((o) => ({
+      name: o.month, // "Jan", "Feb", etc.
+      value: Number(o.order_count),
+    }));
+
+    res.json({ revenueData: formattedRevenue, ordersData: formattedOrders });
+  } catch (error) {
+    console.error("Error fetching chart data:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };

@@ -40,7 +40,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           <div className="flex items-center justify-between h-16 px-4 border-b border-border">
             <Link to="/" className="flex items-center">
               <ShoppingBag className="h-6 w-6 text-primary mr-2" />
-              <span className="text-xl font-bold">FashionAdmin</span>
+              <span className="text-xl font-bold">Stylish</span>
             </Link>
             <Button variant="ghost" size="icon" onClick={onClose} className="md:hidden">
               <X className="h-5 w-5" />

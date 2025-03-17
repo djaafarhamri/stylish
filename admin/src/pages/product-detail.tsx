@@ -120,7 +120,16 @@ export default function ProductDetailPage() {
     },
   });
   // Mock categories
-  const categories = ["Men", "Women", "Accessories"];
+  const categories = [
+    "Dresses",
+    "Shirts",
+    "Pants",
+    "Jackets",
+    "Accessories",
+    "Shoes",
+    "Sportswear",
+    "Formal Wear",
+  ];
 
   useEffect(() => {
     // Simulate API call to fetch product details
@@ -153,9 +162,7 @@ export default function ProductDetailPage() {
     setIsLoading(false);
   }, [id]);
 
-
   const handleSaveProduct = async (data: z.infer<typeof productFormSchema>) => {
-
     setIsSaving(true);
 
     try {
@@ -174,7 +181,7 @@ export default function ProductDetailPage() {
         });
 
         navigate("/products");
-        return
+        return;
       }
       setIsEditing(false);
       toast({
@@ -208,7 +215,6 @@ export default function ProductDetailPage() {
           title: "Product deleted",
           description: "The product has been successfully deleted.",
         });
-
       } else {
         toast({
           variant: "destructive",
@@ -224,7 +230,7 @@ export default function ProductDetailPage() {
         description: "Failed to delete the product. Please try again.",
       });
     } finally {
-      navigate("/products")
+      navigate("/products");
       setIsDeleteDialogOpen(false);
     }
   };

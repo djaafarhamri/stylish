@@ -3,14 +3,14 @@ import { Card } from "../ui/card";
 
 const categories = [
   {
-    id: "men",
-    name: "Men's Collection",
+    id: "Dresses",
+    name: "Dresses",
     image: "/placeholder.svg?height=300&width=400",
     count: 42,
   },
   {
-    id: "women",
-    name: "Women's Collection",
+    id: "Sportswear",
+    name: "Sportswear",
     image: "/placeholder.svg?height=300&width=400",
     count: 56,
   },
@@ -30,7 +30,7 @@ export default function Categories() {
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {categories.map((category) => (
-          <Link key={category.id} to={`/categories/${category.id}`}>
+          <Link key={category.id} to={`/products?category${category.id}&page=1`}>
             <Card className="overflow-hidden h-full transition-all hover:shadow-md">
               <div className="aspect-video relative overflow-hidden">
                 <img

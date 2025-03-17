@@ -35,22 +35,22 @@ export default function Navbar() {
             Shop
           </Link>
           <Link
-            to="/products?category=Men&page=1"
+            to="/products?category=Dresses&page=1"
             className="text-sm font-medium hover:underline underline-offset-4"
           >
-            Men
+            Dresses
           </Link>
           <Link
-            to="/products?category=Women&page=1"
+            to="/products?category=Sportswear&page=1"
             className="text-sm font-medium hover:underline underline-offset-4"
           >
-            Women
+            Sportswear
           </Link>
           <Link
             to="/products?category=Accessories&page=1"
             className="text-sm font-medium hover:underline underline-offset-4"
           >
-            Accssories
+            Accessories
           </Link>
         </nav>
         <div className="flex items-center gap-4">
@@ -117,17 +117,17 @@ export default function Navbar() {
                 </Link>
                 <Link
                   onClick={() => setIsOpen(false)}
-                  to="/products?category=Men&page=1"
+                  to="/products?category=Dresses&page=1"
                   className="text-lg font-medium"
                 >
-                  Men
+                  Dresses
                 </Link>
                 <Link
                   onClick={() => setIsOpen(false)}
-                  to="/products?category=Women&page=1"
+                  to="/products?category=Sportswear&page=1"
                   className="text-lg font-medium"
                 >
-                  Women
+                  Sportswear
                 </Link>
                 <Link
                   onClick={() => setIsOpen(false)}

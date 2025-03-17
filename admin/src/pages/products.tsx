@@ -53,8 +53,16 @@ export default function ProductsPage() {
   const { toast } = useToast();
 
   // Mock categories
-  const categories = ["Men", "Women", "Accessories"];
-
+  const categories = [
+    "Dresses",
+    "Shirts",
+    "Pants",
+    "Jackets",
+    "Accessories",
+    "Shoes",
+    "Sportswear",
+    "Formal Wear",
+  ];
   const [total, setTotal] = useState(0);
 
   const [searchParams] = useSearchParams();
@@ -347,7 +355,7 @@ export default function ProductsPage() {
                 products.map((product, index) => (
                   <tr key={product.id} className="border-t">
                     <td className="py-3 px-4">
-                      <div className="flex max-w-fit h-20 items-center gap-3">
+                      <div className="flex items-center gap-3">
                         <img
                           src={
                             product.mainImage instanceof File
@@ -355,9 +363,9 @@ export default function ProductsPage() {
                               : product.mainImage.url || "/placeholder.svg" // If image is a URL string, use it; otherwise, use the placeholder
                           }
                           alt={`Product ${index + 1}`}
-                          className="w-full h-full object-cover"
+                          className=" w-20 h-16 object-cover"
                         />
-                        <span className="font-medium">{product.name}</span>
+                        <span className="font-medium ">{product.name}</span>
                       </div>
                     </td>
                     <td className="py-3 px-4">{product.category?.name}</td>

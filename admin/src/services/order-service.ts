@@ -1,10 +1,12 @@
 import apiClient from "../lib/apiClient";
 import type {
+  ChartsResponse,
   CustomerResponse,
   CustomersResponse,
   Order,
   OrderResponse,
   OrdersResponse,
+  StatsResponse,
 } from "../types/api";
 
 export const OrderService = {
@@ -49,6 +51,22 @@ export const OrderService = {
   // Get order by ID
   async getCustomerById(id: string): Promise<CustomerResponse> {
     const { data } = await apiClient.get(`/orders/customers/${id}`, {
+      withCredentials: true,
+    });
+    return data;
+  },
+ 
+  // Get stats
+  async getStats(): Promise<StatsResponse> {
+    const { data } = await apiClient.get(`/orders/stats`, {
+      withCredentials: true,
+    });
+    return data;
+  },
+ 
+  // Get charts
+  async getCharts(): Promise<ChartsResponse> {
+    const { data } = await apiClient.get(`/orders/charts`, {
       withCredentials: true,
     });
     return data;

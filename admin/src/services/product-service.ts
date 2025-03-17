@@ -5,6 +5,7 @@ import type {
   ProductFilters,
   ProductResponse,
   ProductsResponse,
+  TopProductsResponse,
 } from "../types/api";
 
 export const ProductService = {
@@ -73,6 +74,11 @@ export const ProductService = {
 
   async getProducts(filters: ProductFilters = {}): Promise<ProductsResponse> {
     const { data } = await apiClient.get("/products", { params: filters });
+    return data;
+  },
+
+  async getTopProducts(): Promise<TopProductsResponse[]> {
+    const { data } = await apiClient.get("/products/top", {withCredentials: true});
     return data;
   },
 

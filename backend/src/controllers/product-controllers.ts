@@ -183,7 +183,7 @@ export const createProduct: RequestHandler = async (
 ) => {
   const { name, description, price, category, inStock, variants } = req.body;
 
-  console.log(req.body)
+  console.log(req.body);
 
   try {
     // Ensure mainImage is provided
@@ -428,5 +428,38 @@ export const deleteProduct = async (req: Request, res: Response) => {
     res.json({ status: true, message: "Product deleted successfully" });
   } catch (error) {
     res.status(500).json({ status: false, message: "Error deleting product" });
+  }
+};
+
+export const getTopProducts = async (req: Request, res: Response) => {
+  try {
+    const topProducts = await prisma.$queryRaw<
+      { name: string; sales: number; revenue: number }[]
+    >`
+  SELECT 
+    p."name",
+    COALESCE(SUM(oi."quantity")::int, 0) AS sales,
+    COALESCE(SUM(oi."quantity" * COALESCE(p."salePrice", p."price"))::numeric, 0) AS revenue
+  FROM "OrderItem" oi
+  JOIN "ProductVariant" pv ON oi."variantId" = pv."id"
+  JOIN "Product" p ON pv."productId" = p."id"
+  JOIN "Order" o ON oi."orderId" = o."id"
+  WHERE o."status" = 'DELIVERED'
+  GROUP BY p."name"
+  ORDER BY sales DESC
+  LIMIT 5;
+`;
+
+    // Convert BigInt to number if needed
+    const formattedProducts = topProducts.map((product) => ({
+      name: product.name,
+      sales: Number(product.sales),
+      revenue: Number(product.revenue),
+    }));
+
+    res.json(formattedProducts);
+  } catch (error) {
+    console.error("Error fetching top products:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };

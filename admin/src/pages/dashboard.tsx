@@ -1,38 +1,40 @@
-
-import { useEffect, useState } from "react"
-import { ShoppingBag, ShoppingCart, Users, DollarSign, TrendingUp, TrendingDown } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
-
-// Mock data for charts
-const revenueData = [
-  { name: "Jan", value: 4000 },
-  { name: "Feb", value: 3000 },
-  { name: "Mar", value: 5000 },
-  { name: "Apr", value: 4000 },
-  { name: "May", value: 7000 },
-  { name: "Jun", value: 6000 },
-  { name: "Jul", value: 8000 },
-]
-
-const ordersData = [
-  { name: "Jan", value: 40 },
-  { name: "Feb", value: 30 },
-  { name: "Mar", value: 45 },
-  { name: "Apr", value: 50 },
-  { name: "May", value: 65 },
-  { name: "Jun", value: 60 },
-  { name: "Jul", value: 75 },
-]
-
-const topProducts = [
-  { name: "Summer T-Shirt", sales: 120, revenue: 2400 },
-  { name: "Slim Fit Jeans", sales: 80, revenue: 3200 },
-  { name: "Casual Hoodie", sales: 60, revenue: 1800 },
-  { name: "Leather Jacket", sales: 30, revenue: 4500 },
-  { name: "Running Shoes", sales: 50, revenue: 3000 },
-]
+import { useEffect, useState } from "react";
+import {
+  ShoppingBag,
+  ShoppingCart,
+  Users,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { OrderService } from "@/services/order-service";
+import CustomTooltip from "@/components/ui/custom-tooltip";
+import { ChartsResponse, TopProductsResponse } from "@/types/api";
+import { ProductService } from "@/services/product-service";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
@@ -40,35 +42,64 @@ export default function DashboardPage() {
     totalOrders: 0,
     totalProducts: 0,
     totalCustomers: 0,
-  })
-  const [isLoading, setIsLoading] = useState(true)
+    trends: {
+      totalRevenue: { trend: "up", trendValue: 0 },
+      totalOrders: { trend: "up", trendValue: 0 },
+      totalProducts: { trend: "up", trendValue: 0 },
+      totalCustomers: { trend: "up", trendValue: 0 },
+    },
+  });
+
+  const [charts, setCharts] = useState<ChartsResponse>({
+    revenueData: [],
+    ordersData: [],
+  });
+
+  const [topProducts, setTopProducts] = useState<TopProductsResponse[]>([]);
+
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API call to fetch dashboard stats
     const fetchStats = async () => {
       try {
-        // In a real app, you would fetch this data from your API
-        // const response = await fetch('https://stylish-skb8.onrender.com/api/dashboard/stats');
-        // const data = await response.json();
-
-        // For demo purposes, we'll use mock data
-        setTimeout(() => {
-          setStats({
-            totalRevenue: 24680,
-            totalOrders: 342,
-            totalProducts: 156,
-            totalCustomers: 289,
-          })
-          setIsLoading(false)
-        }, 1000)
+        const data = await OrderService.getStats();
+        setStats(data);
       } catch (error) {
-        console.error("Error fetching dashboard stats:", error)
-        setIsLoading(false)
+        console.error("Error fetching dashboard stats:", error);
       }
-    }
+      setIsLoading(false);
+    };
 
-    fetchStats()
-  }, [])
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    const fetchCharts = async () => {
+      try {
+        const data = await OrderService.getCharts();
+        setCharts(data);
+      } catch (error) {
+        console.error("Error fetching dashboard charts:", error);
+      }
+      setIsLoading(false);
+    };
+
+    fetchCharts();
+  }, []);
+
+  useEffect(() => {
+    const fetchTopProducts = async () => {
+      try {
+        const data = await ProductService.getTopProducts();
+        setTopProducts(data);
+      } catch (error) {
+        console.error("Error fetching dashboard charts:", error);
+      }
+      setIsLoading(false);
+    };
+
+    fetchTopProducts();
+  }, []);
 
   const StatCard = ({ title, value, icon: Icon, trend, trendValue }: any) => (
     <Card>
@@ -78,7 +109,9 @@ export default function DashboardPage() {
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">
-          {title === "Total Revenue" ? `$${value.toLocaleString()}` : value.toLocaleString()}
+          {title === "Total Revenue"
+            ? `$${value.toLocaleString()}`
+            : value.toLocaleString()}
         </div>
         <p className="flex items-center text-xs text-muted-foreground mt-1">
           {trend === "up" ? (
@@ -86,19 +119,21 @@ export default function DashboardPage() {
           ) : (
             <TrendingDown className="h-3 w-3 mr-1 text-red-500" />
           )}
-          <span className={trend === "up" ? "text-green-500" : "text-red-500"}>{trendValue}%</span>
+          <span className={trend === "up" ? "text-green-500" : "text-red-500"}>
+            {trendValue}%
+          </span>
           <span className="ml-1">from last month</span>
         </p>
       </CardContent>
     </Card>
-  )
+  );
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -107,10 +142,34 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Total Revenue" value={stats.totalRevenue} icon={DollarSign} trend="up" trendValue={12.5} />
-        <StatCard title="Total Orders" value={stats.totalOrders} icon={ShoppingCart} trend="up" trendValue={8.2} />
-        <StatCard title="Total Products" value={stats.totalProducts} icon={ShoppingBag} trend="down" trendValue={2.1} />
-        <StatCard title="Total Customers" value={stats.totalCustomers} icon={Users} trend="up" trendValue={5.7} />
+        <StatCard
+          title="Total Revenue"
+          value={stats.totalRevenue}
+          icon={DollarSign}
+          trend={stats.trends.totalRevenue.trend}
+          trendValue={stats.trends.totalRevenue.trendValue.toFixed(2)}
+        />
+        <StatCard
+          title="Total Orders"
+          value={stats.totalOrders}
+          icon={ShoppingCart}
+          trend={stats.trends.totalOrders.trend}
+          trendValue={stats.trends.totalOrders.trendValue.toFixed(2)}
+        />
+        <StatCard
+          title="Total Products"
+          value={stats.totalProducts}
+          icon={ShoppingBag}
+          trend={stats.trends.totalProducts.trend}
+          trendValue={stats.trends.totalProducts.trendValue.toFixed(2)}
+        />
+        <StatCard
+          title="Total Customers"
+          value={stats.totalCustomers}
+          icon={Users}
+          trend={stats.trends.totalCustomers.trend}
+          trendValue={stats.trends.totalCustomers.trendValue.toFixed(2)}
+        />
       </div>
 
       {/* Charts */}
@@ -123,16 +182,18 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Revenue Overview</CardTitle>
-              <CardDescription>Monthly revenue for the current year</CardDescription>
+              <CardDescription>
+                Monthly revenue for the current year
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={revenueData}>
+                  <LineChart data={charts.revenueData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip formatter={(value) => [`$${value}`, "Revenue"]} />
+                    <Tooltip content={<CustomTooltip />} />
                     <Line
                       type="monotone"
                       dataKey="value"
@@ -150,17 +211,23 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Orders Overview</CardTitle>
-              <CardDescription>Monthly orders for the current year</CardDescription>
+              <CardDescription>
+                Monthly orders for the current year
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={ordersData}>
+                  <BarChart data={charts.ordersData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip formatter={(value) => [value, "Orders"]} />
-                    <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar
+                      dataKey="value"
+                      fill="hsl(var(--primary))"
+                      radius={[4, 4, 0, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -173,7 +240,9 @@ export default function DashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle>Top Selling Products</CardTitle>
-          <CardDescription>Products with the highest sales this month</CardDescription>
+          <CardDescription>
+            Products with the highest sales this month
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -199,6 +268,5 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-

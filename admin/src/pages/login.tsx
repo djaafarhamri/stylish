@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 
 export default function LoginPage() {
   const [email, setEmail] = useState("admin@example.com")
-  const [password, setPassword] = useState("password")
+  const [password, setPassword] = useState("admin123")
   const [isLoading, setIsLoading] = useState(false)
   const { login, isAuthenticated } = useAuth()
   const navigate = useNavigate()
@@ -45,7 +45,7 @@ export default function LoginPage() {
           <div className="flex justify-center mb-2">
             <ShoppingBag className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Fashion Admin</CardTitle>
+          <CardTitle className="text-2xl">Stylish Admin</CardTitle>
           <CardDescription>Enter your credentials to access the admin dashboard</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
