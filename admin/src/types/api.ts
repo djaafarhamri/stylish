@@ -161,6 +161,7 @@ export interface CustomersResponse {
   status: boolean;
   message: string;
   customers: Customer[];
+  total: number;
 }
 export interface CustomerResponse {
   status: boolean;

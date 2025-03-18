@@ -122,7 +122,7 @@ export default function CustomerDetailPage() {
               <AvatarFallback>{customer.firstName.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
-              <CardTitle>{customer.firstName}</CardTitle>
+              <CardTitle>{customer.firstName} {customer.lastName}</CardTitle>
               <CardDescription>
                 <Badge variant={getStatusBadgeVariant(customer.isGuest) as any}>
                   {customer.isGuest ? "Guest" : "User"}

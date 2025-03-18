@@ -14,7 +14,8 @@ export const OrderService = {
   async getOrders(filters: {
     search?: string;
     status: string;
-    sortBy: "createdAt" | "items" | "total";
+    sortBy: "createdAt" | "items" | "total" | "id" | "status" | "firstName";
+    sortOrder: "desc" | "asc";
     page: number;
     limit: number;
     customerId?: string;
@@ -41,8 +42,15 @@ export const OrderService = {
   },
 
   // Get order by ID
-  async getCustomers(): Promise<CustomersResponse> {
+  async getCustomers(filters: {
+    search?: string;
+    sortBy: "orders" | "lastOrder" | "totalSpent" | "id" | "name" | "status";
+    sortOrder: "desc" | "asc";
+    page: number;
+    limit: number;
+  }): Promise<CustomersResponse> {
     const { data } = await apiClient.get(`/orders/customers`, {
+      params: filters,
       withCredentials: true,
     });
     return data;

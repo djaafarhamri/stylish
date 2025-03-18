@@ -77,6 +77,7 @@ export default function ProductsPage() {
       sortBy:
         (searchParams.get("sortBy") as "price" | "createdAt" | "popular") ||
         "createdAt",
+      sortOrder: (searchParams.get("sortOrder") as "desc" | "asc") || "desc",
       page: searchParams.get("page")
         ? Number.parseInt(searchParams.get("page") || "1", 10)
         : 1,

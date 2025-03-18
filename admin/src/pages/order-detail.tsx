@@ -359,8 +359,8 @@ export default function OrderDetailPage() {
                 <div>
                   <h4 className="font-medium">
                     {order.isGuest
-                      ? order.guestFirstName
-                      : order.user?.firstName}
+                      ? order.guestFirstName + " " + order.guestLastName
+                      : order.user?.firstName + " " + order.user?.lastName}
                   </h4>
                   <p className="text-sm text-muted-foreground">
                     {order.isGuest ? order.guestEmail : order.user?.email}

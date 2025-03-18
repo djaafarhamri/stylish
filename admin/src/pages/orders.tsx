@@ -13,6 +13,8 @@ import {
   ChevronRight,
   ChevronLeft,
   ArrowLeft,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -46,8 +48,14 @@ export default function OrdersPage() {
       search: searchParams.get("search") || undefined,
       status: searchParams.get("status") || "all",
       sortBy:
-        (searchParams.get("sortBy") as "items" | "createdAt" | "total") ||
-        "createdAt",
+        (searchParams.get("sortBy") as
+          | "items"
+          | "createdAt"
+          | "total"
+          | "id"
+          | "firstName"
+          | "status") || "createdAt",
+      sortOrder: (searchParams.get("sortOrder") as "desc" | "asc") || "desc",
       page: searchParams.get("page")
         ? Number.parseInt(searchParams.get("page") || "1", 10)
         : 1,
@@ -90,7 +98,16 @@ export default function OrdersPage() {
 
   const handleSortChange = (sortBy: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set("sortBy", sortBy);
+    if (filters.sortBy === sortBy) {
+      if (filters.sortOrder === "asc") {
+        params.set("sortOrder", "desc");
+      } else {
+        params.set("sortOrder", "asc");
+      }
+    } else {
+      params.set("sortBy", sortBy);
+      params.set("sortOrder", "asc");
+    }
     navigate(`${pathname}?${params.toString()}`);
   };
 
@@ -197,10 +214,10 @@ export default function OrdersPage() {
             Orders
           </h1>
         </div>
-          <Button variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
+        <Button variant="outline">
+          <Download className="h-4 w-4 mr-2" />
+          Export
+        </Button>
       </div>
 
       {/* Filters */}
@@ -254,26 +271,89 @@ export default function OrdersPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-muted/50">
-                <th className="text-left py-3 px-4 font-medium">Order ID</th>
-                <th className="text-left py-3 px-4 font-medium">Customer</th>
+                <th
+                  className="text-left py-3 px-4 font-medium"
+                  onClick={() => handleSortChange("id")}
+                >
+                  <div className="flex justify-between">
+                    Order ID{" "}
+                    {filters.sortBy === "id" &&
+                      (filters.sortOrder === "desc" ? (
+                        <ArrowUp width={20} />
+                      ) : (
+                        <ArrowDown width={20} />
+                      ))}
+                  </div>
+                </th>
+                <th
+                  className="text-left py-3 px-4 font-medium"
+                  onClick={() => handleSortChange("firstName")}
+                >
+                  <div className="flex justify-between">
+                    Customer{" "}
+                    {filters.sortBy === "firstName" &&
+                      (filters.sortOrder === "desc" ? (
+                        <ArrowUp width={20} />
+                      ) : (
+                        <ArrowDown width={20} />
+                      ))}
+                  </div>
+                </th>
                 <th
                   className="text-left py-3 px-4 font-medium"
                   onClick={() => handleSortChange("createdAt")}
                 >
-                  Date
+                  <div className="flex justify-between">
+                    Date{" "}
+                    {filters.sortBy === "createdAt" &&
+                      (filters.sortOrder === "desc" ? (
+                        <ArrowUp width={20} />
+                      ) : (
+                        <ArrowDown width={20} />
+                      ))}
+                  </div>
                 </th>
-                <th className="text-left py-3 px-4 font-medium">Status</th>
+                <th
+                  className="text-left py-3 px-4 font-medium"
+                  onClick={() => handleSortChange("status")}
+                >
+                  <div className="flex justify-between">
+                    Status{" "}
+                    {filters.sortBy === "status" &&
+                      (filters.sortOrder === "desc" ? (
+                        <ArrowUp width={20} />
+                      ) : (
+                        <ArrowDown width={20} />
+                      ))}
+                  </div>
+                </th>
                 <th
                   className="text-right py-3 px-4 font-medium"
                   onClick={() => handleSortChange("items")}
                 >
-                  Items
+                  <div className="flex justify-between">
+                    Items{" "}
+                    {filters.sortBy === "items" &&
+                      (filters.sortOrder === "desc" ? (
+                        <ArrowUp width={20} />
+                      ) : (
+                        <ArrowDown width={20} />
+                      ))}
+                  </div>
                 </th>
                 <th
                   className="text-right py-3 px-4 font-medium"
                   onClick={() => handleSortChange("total")}
                 >
-                  Total
+                  <div className="flex justify-between">
+                    Total{" "}
+                    {filters.sortBy === "total" &&
+                      (filters.sortOrder === "desc" ? (
+                        <ArrowUp width={20} />
+                      ) : (
+                        <ArrowDown width={20} />
+                      ))}
+                  </div>
                 </th>
                 <th className="text-right py-3 px-4 font-medium">Actions</th>
               </tr>
@@ -298,8 +378,10 @@ export default function OrdersPage() {
                       <div>
                         <div className="font-medium">
                           {order.isGuest
-                            ? order.guestFirstName
-                            : order.user?.firstName}
+                            ? order.guestFirstName + " " + order.guestLastName
+                            : order.user?.firstName +
+                              " " +
+                              order.user?.lastName}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {order.isGuest ? order.guestEmail : order.user?.email}
@@ -371,7 +453,7 @@ export default function OrdersPage() {
       {orders.length > 0 && totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            Showing {orders.length} of {total} products
+            Showing {orders.length} of {total} orders
           </div>
           <div className="flex items-center space-x-2">
             {/* Pagination controls */}

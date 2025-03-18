@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
+import redis from "../cache/redis";
 
 const prisma = new PrismaClient();
 
@@ -49,6 +50,7 @@ export const register = async (req: Request, res: Response) => {
     });
 
     const token = generateToken(user.id);
+    await redis.del("customers:*");
 
     res.cookie("access_token", token, {
       httpOnly: true, // Prevents JavaScript access
@@ -138,6 +140,7 @@ export const updateProfile = async (req: Request, res: Response) => {
       where: { id: req.userId },
       data: { firstName, lastName, email, phone },
     });
+    await redis.del("customers:*");
 
     res.json({ status: true, message: "profile updated successfully", user });
   } catch (error) {

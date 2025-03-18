@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { CartItem, PrismaClient } from "@prisma/client";
 import { subMonths } from "date-fns";
+import redis from "../cache/redis";
 
 const prisma = new PrismaClient();
 
@@ -83,7 +84,8 @@ export const createOrder = async (req: Request, res: Response) => {
       where: { userId },
       data: { items: { deleteMany: {} } },
     });
-
+    await redis.del("orders:*");
+    await redis.del("customers:*");
     res
       .status(201)
       .json({ status: true, message: "Order created successfully", order });
@@ -146,6 +148,8 @@ export const createGuestOrder = async (req: Request, res: Response) => {
       },
       include: { items: true },
     });
+    await redis.del("orders:*");
+    await redis.del("customers:*");
 
     res
       .status(201)
@@ -168,6 +172,7 @@ export const getOrders = async (req: Request, res: Response) => {
     search,
     status = "all",
     sortBy = "createdAt",
+    sortOrder = "asc",
     page = 1,
     limit = 10,
     customerId,
@@ -177,6 +182,17 @@ export const getOrders = async (req: Request, res: Response) => {
     // Convert page and limit to numbers
     const pageNumber = Number(page) || 1;
     const limitNumber = Number(limit) || 10;
+
+    const cacheKey = `orders:${search || "all"}:${
+      status || "all"
+    }:${sortBy}:${sortOrder}:${pageNumber}:${limitNumber}`;
+    // 🔥 Check if data is cached
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      res.status(200).json(JSON.parse(cachedData));
+      return;
+    }
+
     const skip = (pageNumber - 1) * limitNumber;
 
     // Construct the where clause dynamically
@@ -212,6 +228,31 @@ export const getOrders = async (req: Request, res: Response) => {
       ];
     }
 
+    const orderBy: any = {};
+    switch (sortBy) {
+      case "id":
+        orderBy.id = sortOrder;
+        break;
+      case "firstName":
+        orderBy.user = { firstName: sortOrder };
+        break;
+      case "createdAt":
+        orderBy.createdAt = sortOrder;
+        break;
+      case "status":
+        orderBy.status = sortOrder; // Guests first if asc, users first if desc
+        break;
+      case "items":
+        orderBy.items = { _count: sortOrder };
+        break;
+      case "total":
+        orderBy.total = sortOrder;
+        break;
+      default:
+        orderBy.createdAt = "desc"; // Default sorting
+        break;
+    }
+
     // Fetch orders with filtering, sorting, and pagination
     const orders = await prisma.order.findMany({
       where,
@@ -234,20 +275,25 @@ export const getOrders = async (req: Request, res: Response) => {
         shippingAddress: true,
         user: true,
       },
-      orderBy: { [sortBy as string]: "desc" },
+      orderBy,
       skip,
       take: limitNumber,
     });
     const totalCount = await prisma.order.count({ where });
 
-    res
-      .status(200)
-      .json({
-        status: true,
-        message: "Orders retrieved successfully",
-        orders,
-        total: totalCount,
-      });
+    const responseData = {
+      status: true,
+      customers: orders,
+      total: totalCount,
+    };
+    await redis.setex(cacheKey, 300, JSON.stringify(responseData));
+
+    res.status(200).json({
+      status: true,
+      message: "Orders retrieved successfully",
+      orders,
+      total: totalCount,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Could not retrieve orders", error });
@@ -351,11 +397,71 @@ export const getOrderById = async (req: Request, res: Response) => {
  * @access Private (Admin)
  */
 export const getCustomers = async (req: Request, res: Response) => {
+  const {
+    search,
+    sortBy = "lastOrder",
+    sortOrder = "desc",
+    page = 1,
+    limit = 10,
+  } = req.query;
+
   try {
+    const pageNumber = Number(page) || 1;
+    const limitNumber = Number(limit) || 10;
+    const cacheKey = `customers:${
+      search || "all"
+    }:${sortBy}:${sortOrder}:${pageNumber}:${limitNumber}`;
+    // 🔥 Check if data is cached
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      res.status(200).json(JSON.parse(cachedData));
+      return;
+    }
+
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const userWhere: any = { role: "CUSTOMER" };
+    const guestWhere: any = { isGuest: true };
+
+    if (search) {
+      const searchCondition = {
+        contains: search,
+        mode: "insensitive",
+      };
+
+      // Apply search filter to users
+      userWhere.OR = [
+        { firstName: searchCondition },
+        { lastName: searchCondition },
+        { email: searchCondition },
+        { phone: searchCondition },
+        {
+          orders: {
+            some: {
+              items: {
+                some: {
+                  variant: {
+                    product: { name: searchCondition },
+                  },
+                },
+              },
+            },
+          },
+        },
+      ];
+
+      // Apply search filter to guest orders
+      guestWhere.OR = [
+        { guestFirstName: searchCondition },
+        { guestLastName: searchCondition },
+        { guestEmail: searchCondition },
+        { guestPhone: searchCondition },
+      ];
+    }
+
+    // Fetch registered users
     const users = await prisma.user.findMany({
-      where: {
-        role: "CUSTOMER"
-      },
+      where: userWhere,
       include: {
         orders: {
           include: {
@@ -372,12 +478,14 @@ export const getCustomers = async (req: Request, res: Response) => {
         },
       },
     });
+
+    // Fetch guest orders
     const guestOrders = await prisma.order.findMany({
-      where: { isGuest: true },
+      where: guestWhere,
       include: { items: true },
     });
 
-    // Transform users into customers with last order date
+    // Transform users into customer objects
     const customers = users.map((user) => ({
       id: user.id,
       firstName: user.firstName,
@@ -392,12 +500,12 @@ export const getCustomers = async (req: Request, res: Response) => {
           )
         : null,
       totalSpent: user.orders.reduce(
-        (sum, order) => sum + Number(order.total),
+        (sum, order) => sum + Number(order.total || 0),
         0
-      ), // Sum total spent
+      ),
     }));
 
-    // Transform guest orders into customer format
+    // Transform guest orders into customer objects
     const guestCustomers = guestOrders.map((order) => ({
       id: `guest-${order.id}`,
       firstName: order.guestFirstName,
@@ -406,25 +514,70 @@ export const getCustomers = async (req: Request, res: Response) => {
       phone: order.guestPhone,
       isGuest: true,
       lastOrderDate: order.createdAt,
-      totalSpent: Number(order.total), // Guest only has one order
+      totalSpent: Number(order.total || 0),
       orders: 1,
     }));
 
-    // Combine both lists and sort by last order date (descending)
-    const sortedCustomers = [...customers, ...guestCustomers].sort(
-      (a, b) =>
-        (b.lastOrderDate ? new Date(b.lastOrderDate).getTime() : 0) -
-        (a.lastOrderDate ? new Date(a.lastOrderDate).getTime() : 0)
-    );
+    // Combine customers and guest customers
+    let allCustomers = [...customers, ...guestCustomers];
+
+    // Sorting with sortOrder applied
+    const orderFactor = sortOrder === "asc" ? 1 : -1;
+
+    switch (sortBy) {
+      case "lastOrder":
+        allCustomers.sort(
+          (a, b) =>
+            orderFactor *
+            ((b.lastOrderDate ? new Date(b.lastOrderDate).getTime() : 0) -
+              (a.lastOrderDate ? new Date(a.lastOrderDate).getTime() : 0))
+        );
+        break;
+      case "orders":
+        allCustomers.sort((a, b) => orderFactor * (b.orders - a.orders));
+        break;
+      case "totalSpent":
+        allCustomers.sort(
+          (a, b) => orderFactor * (b.totalSpent - a.totalSpent)
+        );
+        break;
+      case "id":
+        allCustomers.sort((a, b) => orderFactor * (a.id > b.id ? 1 : -1));
+        break;
+      case "name":
+        allCustomers.sort((a, b) => {
+          if (a.firstName && b.firstName)
+            return orderFactor * a.firstName.localeCompare(b.firstName);
+          return 0;
+        });
+        break;
+      case "status": // Sort by isGuest
+        allCustomers.sort(
+          (a, b) => orderFactor * (Number(a.isGuest) - Number(b.isGuest))
+        );
+        break;
+    }
+
+    // Pagination
+    const totalCustomers = allCustomers.length;
+    const paginatedCustomers = allCustomers.slice(skip, skip + limitNumber);
+
+    const responseData = {
+      status: true,
+      customers: paginatedCustomers,
+      total: totalCustomers,
+    };
+    await redis.setex(cacheKey, 300, JSON.stringify(responseData));
 
     res.status(200).json({
       status: true,
-      message: "Order created successfully",
-      customers: sortedCustomers,
+      message: "Customers retrieved successfully",
+      customers: paginatedCustomers,
+      total: totalCustomers,
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Could not retrieve order", error });
+    console.error("Error fetching customers:", error);
+    res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
 
@@ -553,6 +706,8 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
       where: { id: parseInt(id) },
       data: { status },
     });
+    await redis.del("orders:*");
+    await redis.del("customers:*");
 
     res.status(200).json(order);
   } catch (error) {
@@ -572,6 +727,8 @@ export const deleteOrder = async (req: Request, res: Response) => {
   try {
     await prisma.order.delete({ where: { id: parseInt(id) } });
     res.status(200).json({ message: "Order deleted successfully" });
+    await redis.del("orders:*");
+    await redis.del("customers:*");
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Could not delete order", error });
