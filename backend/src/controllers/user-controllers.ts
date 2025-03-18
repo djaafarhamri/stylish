@@ -88,6 +88,8 @@ export const login = async (req: Request, res: Response) => {
     res.cookie("access_token", token, {
       httpOnly: true,
       maxAge: 60 * 60 * 1000, // 1 hour
+      sameSite: process.env.NODE_ENV === "production" ? "none" : undefined,
+      secure: process.env.NODE_ENV === "production" ? true : false,
     });
 
     res.json({ status: true, message: "Login successful", user });
@@ -263,12 +265,10 @@ export const deleteAddress = async (req: Request, res: Response) => {
       return;
     }
     if (address?.userId !== req.userId) {
-      res
-        .status(401)
-        .json({
-          status: false,
-          message: "unauthorized to delete this address",
-        });
+      res.status(401).json({
+        status: false,
+        message: "unauthorized to delete this address",
+      });
       return;
     }
     await prisma.address.delete({
@@ -291,7 +291,11 @@ export const deleteAddress = async (req: Request, res: Response) => {
       }
     }
 
-    res.json({ status: true, message: "address deleted", default: nextAddress? nextAddress.id:null });
+    res.json({
+      status: true,
+      message: "address deleted",
+      default: nextAddress ? nextAddress.id : null,
+    });
   } catch (error) {
     res
       .status(400)
@@ -305,8 +309,8 @@ export const getMyAddresses = async (req: Request, res: Response) => {
     const addresses = await prisma.address.findMany({
       where: { userId: req.userId },
       orderBy: {
-        isDefault: "desc"
-      }
+        isDefault: "desc",
+      },
     });
 
     res.json({
