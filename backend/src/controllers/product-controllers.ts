@@ -1,93 +1,163 @@
 import { Request, RequestHandler, Response } from "express";
-import { Color, PrismaClient } from "@prisma/client";
+import { Color, Prisma, PrismaClient } from "@prisma/client";
 
 import { v2 as cloudinary } from "cloudinary";
+import { Decimal } from "@prisma/client/runtime/library";
 
 const prisma = new PrismaClient();
 // ✅ 1. Get all products
+
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
     const {
-      category,
+      categoryName,
       minPrice,
       maxPrice,
       search,
-      sortBy = "createdAt",
-      sortOrder = "desc",
-      status = "all",
-      page = 1,
-      limit = 10,
+      status,
       sizes,
-      colors, // Expecting "White|#FFFFFF,Green|#008000"
+      colors,
+      sortBy,
+      sortOrder,
+      page = "1",
+      limit = "10",
     } = req.query;
 
-    const filters: any = {};
+    // Build base filters for Product fields
+    const filters: Prisma.ProductWhereInput = {};
 
-    if (category)
-      filters.categoryName = category === "all" ? undefined : category;
-    if (minPrice) filters.price = { gte: Number(minPrice) };
-    if (maxPrice) filters.price = { ...filters.price, lte: Number(maxPrice) };
-    if (search) filters.name = { contains: search, mode: "insensitive" };
-    if (status) filters.status = status === "all" ? undefined : status;
+    if (categoryName && categoryName !== "all") {
+      filters.categoryName = String(categoryName);
+    }
 
-    const variantFilters: any = {};
+    if (minPrice || maxPrice) {
+      filters.price = {};
+      if (minPrice) {
+        filters.price.gte = new Decimal(String(minPrice));
+      }
+      if (maxPrice) {
+        filters.price.lte = new Decimal(String(maxPrice));
+      }
+    }
 
-    // ✅ Filter by sizes
+    if (search) {
+      filters.OR = [
+        { name: { contains: String(search), mode: "insensitive" } },
+        { description: { contains: String(search), mode: "insensitive" } },
+      ];
+    }
+
+    if (status && status !== "all") {
+      filters.status = String(status);
+    }
+
+    // Build filters for variants based on sizes and colors
+    const variantFilters: Prisma.ProductVariantWhereInput[] = [];
+
     if (sizes) {
-      const sizeArray = (sizes as string).split(",");
-      variantFilters.size = { in: sizeArray };
-    }
-
-    // ✅ Filter by colors
-    if (colors) {
-      const colorArray = (colors as string).split(",").map((c) => {
-        const [name, hex] = c.split("|");
-        return { name, hex };
+      const sizesArr = String(sizes)
+        .split(",")
+        .map((s) => s.trim());
+      variantFilters.push({
+        size: { in: sizesArr },
       });
-
-      variantFilters.color = {
-        OR: colorArray.map(({ name, hex }) => ({
-          AND: [{ name }, { hex }],
-        })),
-      };
     }
 
-    // ✅ Apply variant filters if any exist
-    if (Object.keys(variantFilters).length > 0) {
-      filters.variants = { some: variantFilters };
+    if (colors) {
+      // Colors are sent as "White|#FFFFFF,Green|#008000"
+      const colorsArr = String(colors)
+        .split(",")
+        .map((item) => {
+          const [name, hex] = item.split("|");
+          return { name: name.trim(), hex: hex.trim() };
+        });
+      variantFilters.push({
+        color: {
+          OR: colorsArr.map((color) => ({
+            name: color.name,
+            hex: color.hex,
+          })),
+        },
+      });
     }
 
-    const totalCount = await prisma.product.count({ where: filters });
+    // Combine variant filters – if both sizes and colors are provided, require both conditions
+    if (variantFilters.length === 1) {
+      filters.variants = { some: variantFilters[0] };
+    } else if (variantFilters.length === 2) {
+      filters.AND = [
+        { variants: { some: variantFilters[0] } },
+        { variants: { some: variantFilters[1] } },
+      ];
+    }
+
+    // Handle pagination
+    const pageNumber = parseInt(String(page)) || 1;
+    const limitNumber = parseInt(String(limit)) || 10;
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const sortField = sortBy ? String(sortBy) : "createdAt";
+    const order: Prisma.SortOrder =
+      sortOrder && String(sortOrder).toLowerCase() === "desc" ? "desc" : "asc";
+
+    // For sort fields other than "quantity", we can apply ordering directly.
+    let orderBy: Prisma.ProductOrderByWithRelationInput | undefined = {};
+    if (sortField !== "quantity") {
+      orderBy = { [sortField]: order };
+    }
+    // For "quantity", since ordering by aggregated sum might not be available,
+    // we'll sort in-memory after computing the aggregated quantity.
 
     const products = await prisma.product.findMany({
       where: filters,
-      orderBy: { [sortBy as string]: sortOrder },
-      skip: (Number(page) - 1) * Number(limit),
-      take: Number(limit),
+      orderBy: orderBy,
+      skip,
+      take: limitNumber,
       include: {
-        category: true,
-        mainImage: true,
-        images: true,
         variants: {
           include: {
             color: true,
           },
         },
+        category: true,
+        images: true,
+        mainImage: true,
       },
+    });
+
+    // Compute aggregated quantity (sum of all variant quantities) for each product
+    let productsWithQuantity = products.map((product) => ({
+      ...product,
+      quantity: product.variants.reduce(
+        (sum, variant) => sum + variant.quantity,
+        0
+      ),
+    }));
+
+    // If sorting by aggregated quantity, sort in-memory.
+    if (sortField === "quantity") {
+      productsWithQuantity.sort((a, b) =>
+        order === "asc" ? a.quantity - b.quantity : b.quantity - a.quantity
+      );
+    }
+
+    const total = await prisma.product.count({
+      where: filters,
     });
 
     res.json({
       status: true,
-      message: "Products fetched successfully",
-      products,
-      total: totalCount,
+      message: "featured products fetched successfully",
+      products: productsWithQuantity,
+      total,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ status: false, message: "Error fetching products" });
+    res
+      .status(500)
+      .json({ error: "An error occurred while fetching products" });
   }
 };
-
 // ✅ 2. Get featured products
 export const getFeaturedProducts = async (req: Request, res: Response) => {
   try {

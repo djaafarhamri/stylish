@@ -83,13 +83,13 @@ export interface ProductResponse {
 }
 
 export interface ProductFilters {
-  category?: string;
+  categoryName?: string;
   minPrice?: number;
   maxPrice?: number;
   search?: string;
   sizes?: string;
   colors?: string;
-  sortBy?: "price" | "createdAt" | "popular";
+  sortBy?: "price" | "createdAt" | "categoryName" | "name" | "quantity" | "status";
   sortOrder?: "asc" | "desc";
   page?: number;
   limit?: number;

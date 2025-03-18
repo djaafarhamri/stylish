@@ -8,13 +8,14 @@ import {
 import {
   Plus,
   Search,
-  Filter,
   MoreHorizontal,
   Edit,
   Trash,
   Eye,
   ChevronRight,
   ChevronLeft,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -69,14 +70,19 @@ export default function ProductsPage() {
 
   const filters = useMemo(
     () => ({
-      category: searchParams.get("category") || "all",
+      categoryName: searchParams.get("category") || "all",
       search: searchParams.get("search") || undefined,
       status: searchParams.get("status") || "all",
       sizes: searchParams.get("sizes") || undefined,
       colors: searchParams.get("colors") || undefined,
       sortBy:
-        (searchParams.get("sortBy") as "price" | "createdAt" | "popular") ||
-        "createdAt",
+        (searchParams.get("sortBy") as
+          | "price"
+          | "createdAt"
+          | "categoryName"
+          | "name"
+          | "quantity"
+          | "status") || "createdAt",
       sortOrder: (searchParams.get("sortOrder") as "desc" | "asc") || "desc",
       page: searchParams.get("page")
         ? Number.parseInt(searchParams.get("page") || "1", 10)
@@ -117,12 +123,20 @@ export default function ProductsPage() {
 
   const totalPages = Math.ceil(total / filters.limit);
 
-  // const handleSortChange = (value: string) => {
-  //   const params = new URLSearchParams(searchParams.toString());
-  //   params.set("sortBy", value);
-  //   setSearchParams(params);
-  //   navigate(`${pathname}?${params.toString()}`);
-  // };
+  const handleSortChange = (sortBy: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (filters.sortBy === sortBy) {
+      if (filters.sortOrder === "asc") {
+        params.set("sortOrder", "desc");
+      } else {
+        params.set("sortOrder", "asc");
+      }
+    } else {
+      params.set("sortBy", sortBy);
+      params.set("sortOrder", "asc");
+    }
+    navigate(`${pathname}?${params.toString()}`);
+  };
 
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -147,6 +161,13 @@ export default function ProductsPage() {
   const handleStatusChange = (status: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("status", status);
+    params.set("page", "1");
+    navigate(`${pathname}?${params.toString()}`);
+  };
+
+  const handleSearchChange = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("search", searchQuery);
     params.set("page", "1");
     navigate(`${pathname}?${params.toString()}`);
   };
@@ -276,8 +297,12 @@ export default function ProductsPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+        <Button onClick={handleSearchChange}>Search</Button>
         <div className="flex gap-2">
-          <Select value={filters.category} onValueChange={handleCategoryChange}>
+          <Select
+            value={filters.categoryName}
+            onValueChange={handleCategoryChange}
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
@@ -321,10 +346,6 @@ export default function ProductsPage() {
               <SelectItem value="50">50 per page</SelectItem>
             </SelectContent>
           </Select>
-
-          <Button variant="outline" size="icon">
-            <Filter className="h-4 w-4" />
-          </Button>
         </div>
       </div>
 
@@ -334,11 +355,90 @@ export default function ProductsPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-muted/50">
-                <th className="text-left py-3 px-4 font-medium">Product</th>
-                <th className="text-left py-3 px-4 font-medium">Category</th>
-                <th className="text-right py-3 px-4 font-medium">Price</th>
-                <th className="text-right py-3 px-4 font-medium">Stock</th>
-                <th className="text-left py-3 px-4 font-medium">Status</th>
+                <th
+                  className="text-left py-3 px-4 font-medium"
+                  onClick={() => handleSortChange("name")}
+                >
+                  <div className="flex justify-between">
+                    Product{" "}
+                    {filters.sortBy === "name" &&
+                      (filters.sortOrder === "desc" ? (
+                        <ArrowUp width={20} />
+                      ) : (
+                        <ArrowDown width={20} />
+                      ))}
+                  </div>
+                </th>
+                <th
+                  className="text-left py-3 px-4 font-medium"
+                  onClick={() => handleSortChange("categoryName")}
+                >
+                  <div className="flex justify-between">
+                    Category{" "}
+                    {filters.sortBy === "categoryName" &&
+                      (filters.sortOrder === "desc" ? (
+                        <ArrowUp width={20} />
+                      ) : (
+                        <ArrowDown width={20} />
+                      ))}
+                  </div>
+                </th>
+                <th
+                  className="text-left py-3 px-4 font-medium"
+                  onClick={() => handleSortChange("createdAt")}
+                >
+                  <div className="flex justify-between">
+                    Creation Date{" "}
+                    {filters.sortBy === "createdAt" &&
+                      (filters.sortOrder === "desc" ? (
+                        <ArrowUp width={20} />
+                      ) : (
+                        <ArrowDown width={20} />
+                      ))}
+                  </div>
+                </th>
+                <th
+                  className="text-right py-3 px-4 font-medium"
+                  onClick={() => handleSortChange("price")}
+                >
+                  <div className="flex justify-between">
+                    Price{" "}
+                    {filters.sortBy === "price" &&
+                      (filters.sortOrder === "desc" ? (
+                        <ArrowUp width={20} />
+                      ) : (
+                        <ArrowDown width={20} />
+                      ))}
+                  </div>
+                </th>
+                <th
+                  className="text-right py-3 px-4 font-medium"
+                  onClick={() => handleSortChange("quantity")}
+                >
+                  <div className="flex justify-between">
+                    Stock{" "}
+                    {filters.sortBy === "quantity" &&
+                      (filters.sortOrder === "desc" ? (
+                        <ArrowUp width={20} />
+                      ) : (
+                        <ArrowDown width={20} />
+                      ))}
+                  </div>
+                </th>
+                <th
+                  className="text-left py-3 px-4 font-medium"
+                  onClick={() => handleSortChange("status")}
+                >
+                  <div className="flex justify-between">
+                    Status{" "}
+                    {filters.sortBy === "status" &&
+                      (filters.sortOrder === "desc" ? (
+                        <ArrowUp width={20} />
+                      ) : (
+                        <ArrowDown width={20} />
+                      ))}
+                  </div>
+                </th>
                 <th className="text-right py-3 px-4 font-medium">Actions</th>
               </tr>
             </thead>
@@ -370,6 +470,15 @@ export default function ProductsPage() {
                       </div>
                     </td>
                     <td className="py-3 px-4">{product.category?.name}</td>
+                    <td className="py-3 px-4">
+                      {new Date(
+                        product.createdAt || Date.now()
+                      ).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </td>
                     <td className="text-right py-3 px-4">
                       ${parseFloat(product.price).toFixed(2)}
                     </td>

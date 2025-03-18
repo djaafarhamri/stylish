@@ -111,7 +111,7 @@ export const ProductService = {
     category: string,
     filters: Omit<ProductFilters, "category"> = {}
   ): Promise<ProductsResponse> {
-    return this.getProducts({ ...filters, category });
+    return this.getProducts({ ...filters, categoryName: category });
   },
 
   // Search products
