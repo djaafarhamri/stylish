@@ -266,9 +266,6 @@ export default function ProductDetailPage() {
     getColors();
   }, []);
 
-  useEffect(() => {
-    console.log(form.watch("variants"));
-  }, [form.watch("variants")]);
 
   const [activeTab, setActiveTab] = useState("details");
 

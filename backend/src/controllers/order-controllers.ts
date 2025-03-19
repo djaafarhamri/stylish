@@ -179,7 +179,6 @@ export const getOrders = async (req: Request, res: Response) => {
   } = req.query;
 
   try {
-    // Convert page and limit to numbers
     const pageNumber = Number(page) || 1;
     const limitNumber = Number(limit) || 10;
 
@@ -283,7 +282,7 @@ export const getOrders = async (req: Request, res: Response) => {
 
     const responseData = {
       status: true,
-      customers: orders,
+      orders,
       total: totalCount,
     };
     await redis.setex(cacheKey, 300, JSON.stringify(responseData));

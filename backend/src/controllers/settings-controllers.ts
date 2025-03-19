@@ -17,7 +17,6 @@ export const getStore = async (req: Request, res: Response) => {
 export const setStore = async (req: Request, res: Response) => {
   const { id, name, email, phone, currency, address, description } = req.body;
   
-  console.log(req.body)
   try {
     const store = await prisma.store.update({
       where: {

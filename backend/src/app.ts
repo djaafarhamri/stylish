@@ -17,7 +17,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use("*", (req: Request, res: Response, next: NextFunction) => {
-  console.log("API CALL: ", req.originalUrl);
+  console.log("API CALL: ", req.method, req.originalUrl);
   next();
 });
 

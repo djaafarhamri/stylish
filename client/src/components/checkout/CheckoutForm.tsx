@@ -281,7 +281,6 @@ export default function CheckoutForm({ addresses }: { addresses: Address[] }) {
         navigate(`/checkout/confirmation?orderId=${orderNumber}`);
       }, 2000);
     } else {
-      console.log(data);
       showToast({
         title: data.message,
         type: "error",

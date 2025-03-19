@@ -253,8 +253,6 @@ export const createProduct: RequestHandler = async (
 ) => {
   const { name, description, price, category, inStock, variants } = req.body;
 
-  console.log(req.body);
-
   try {
     // Ensure mainImage is provided
     if (!req.body.mainImage) {
@@ -376,7 +374,6 @@ export const updateProduct = async (req: Request, res: Response) => {
 
     // **2️⃣ Process Newly Uploaded Images**
 
-    console.log(req.body.newImages);
     const newImages = req.body.newImages
       ? Array.isArray(req.body.newImages) // Check if it's already an array
         ? req.body.newImages.map((img: any) => ({
@@ -404,7 +401,6 @@ export const updateProduct = async (req: Request, res: Response) => {
     );
 
     for (const img of imagesToDelete) {
-      console.log(img);
       await cloudinary.uploader.destroy(img.public_id);
       await prisma.image.delete({ where: { id: img.id } });
     }
@@ -421,7 +417,6 @@ export const updateProduct = async (req: Request, res: Response) => {
       : [];
     // **6️⃣ Update Product in Prisma**
 
-    console.log(newImages);
     const updatedProduct = await prisma.product.update({
       where: { id },
       data: {

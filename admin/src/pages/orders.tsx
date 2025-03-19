@@ -359,7 +359,7 @@ export default function OrdersPage() {
               </tr>
             </thead>
             <tbody>
-              {orders.length === 0 ? (
+              {orders?.length === 0 ? (
                 <tr>
                   <td
                     colSpan={7}
@@ -369,7 +369,7 @@ export default function OrdersPage() {
                   </td>
                 </tr>
               ) : (
-                orders.map((order) => (
+                orders?.map((order) => (
                   <tr key={order.id} className="border-t">
                     <td className="py-3 px-4 font-medium">
                       {"ORD-" + String(order.id).padStart(5, "0")}
@@ -450,10 +450,10 @@ export default function OrdersPage() {
         </div>
       </div>
       {/* Pagination */}
-      {orders.length > 0 && totalPages > 1 && (
+      {orders?.length > 0 && totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            Showing {orders.length} of {total} orders
+            Showing {orders?.length} of {total} orders
           </div>
           <div className="flex items-center space-x-2">
             {/* Pagination controls */}
