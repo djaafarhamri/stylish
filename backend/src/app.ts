@@ -25,7 +25,15 @@ app.use("*", (req: Request, res: Response, next: NextFunction) => {
 app.use(
   cors({
     credentials: true,
-    origin: ["http://localhost:3000", "http://localhost:5173", "https://stylish-admin.vercel.app", "https://www.stylish-admin.vercel.app", "https://stylish-six-tawny.vercel.app", "https://www.stylish-six-tawny.vercel.app"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "https://stylish-admin.vercel.app",
+      "https://www.stylish-admin.vercel.app",
+      "https://stylish-six-tawny.vercel.app",
+      "https://www.stylish-six-tawny.vercel.app",
+      "https://stylish-server.vercel.app"
+    ],
   })
 );
 
