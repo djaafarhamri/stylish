@@ -6,11 +6,10 @@
   "author": "",
   "main": "dist/app.js",
   "scripts": {
+    "dev": "ts-node src/app.ts",
+    "build": "prisma generate && tsc",
     "start": "node dist/app.js",
-    "dev": "nodemon src/app.ts",
-    "build": "npm i && npx prisma generate && tsc",
-    "migrate": "prisma migrate dev",
-    "generate": "prisma generate"
+    "vercel-build": "prisma generate && tsc"
   },
   "dependencies": {
     "@faker-js/faker": "^9.6.0",

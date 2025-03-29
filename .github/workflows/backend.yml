@@ -26,7 +26,10 @@ jobs:
       - name: Generate Prisma Client
         working-directory: ./backend
         run: npx prisma generate
-      
-      - name: Deploy Backend to Render
-        run: |
-          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_SERVER_PROJECT_ID }}
+        run: vercel deploy --prod --token=$VERCEL_TOKEN
